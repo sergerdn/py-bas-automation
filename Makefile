@@ -62,7 +62,7 @@ tests_coverage:
 
 run_cmd_initial_cmd:
 	@$(MAKE) clean
-	poetry run python cmd_initial.py --bas_fingerprint_key="${FINGERPRINT_KEY}" --count_profiles=2
+	poetry run python cmd_initial.py --bas_fingerprint_key="${FINGERPRINT_KEY}" --count_profiles=1
 
 run_cmd_worker_cmd:
 	poetry run python cmd_worker.py
