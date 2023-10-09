@@ -1,0 +1,10 @@
+__pycache__/
+.env
+!reports/.gitkeep
+reports/*
+!logs/.gitkeep
+logs/*
+.coverage
+dist/*
+!htmlcov/.gitkeep
+htmlcov/*

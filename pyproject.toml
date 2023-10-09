@@ -1,0 +1,75 @@
+[tool.poetry]
+name = "pybas-automation"
+version = "0.0.1"
+description = "A Python library for automating BrowserAutomationStudio (BAS) using headless Chromium browsers and Windows GUI program."
+authors = ["sergerdn <64213648+sergerdn@users.noreply.github.com>"]
+homepage = "https://github.com/sergerdn/py-bas-automation"
+repository = "https://github.com/sergerdn/py-bas-automation"
+keywords = ["headless Chromium", "Python browser automation"]
+classifiers = [
+    "Topic :: Internet :: WWW/HTTP :: Browsers",
+    "Topic :: Software Development :: Libraries :: Python Modules"
+]
+readme = "dist/README.md"
+#include = ["docs/"]
+
+
+[tool.poetry.dependencies]
+python = "^3.11"
+httpx = { extras = ["socks"], version = "^0.25.0" }
+pydantic = "^2.4.2"
+python-dotenv = "^1.0.0"
+psutil = "^5.9.5"
+websockets = "^11.0.3"
+filelock = "^3.12.4"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.2"
+pytest-vcr = "^1.0.2"
+pycountry = "^22.3.5"
+black = "^23.9.1"
+mypy = "^1.5.1"
+isort = "^5.12.0"
+flake8 = "^6.1.0"
+types-psutil = "^5.9.5.16"
+pytest-cov = "^4.1.0"
+pytest-asyncio = "^0.21.1"
+pydocstyle = "^6.3.0"
+pylint = { extras = ["spelling"], version = "^3.0.1" }
+pylint-pydantic = "^0.3.0"
+autopep8 = "^2.0.4"
+
+[tool.poetry.group.cmd.dependencies]
+click = "^8.1.7"
+playwright = "^1.38.0"
+
+[tool.poetry.group.cmd-dev.dependencies]
+pytest-playwright = "^0.4.2"
+
+[tool.poetry.group.docs.dependencies]
+humanmark = "^0.5.1"
+
+[tool.black]
+line-length = 120
+
+[tool.isort]
+line_length = 120
+py_version = 311
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_untyped_calls = true
+exclude = "tests/contrib"
+
+[tool.pylint]
+max-line-length = 120
+
+#[tool.poetry.scripts]
+#build-readme = "python scripts/update_readme_links.py"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
