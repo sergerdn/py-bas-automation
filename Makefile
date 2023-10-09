@@ -4,6 +4,10 @@
 include .env
 export
 
+GIT_BRANCH := $(shell git rev-parse --abbrev-ref HEAD)
+GIT_COMMIT := $(shell git rev-list -1 HEAD)
+GIT_VERSION := $(shell git describe --tags --always)
+
 clean:
 	@rm -rf .mypy_cache || echo ""
 	@rm -rf .pytest_cache || echo ""
@@ -64,7 +68,13 @@ run_cmd_worker_cmd:
 	poetry run python cmd_worker.py
 
 publish:
-	poetry run python scripts/update_readme_links.py
-	poetry build
-	poetry publish --username=__token__ --password=${PYPI_PASSWORD}
-	start "" "https://pypi.org/project/pybas-automation/"
+	echo "Current branch is '${GIT_BRANCH}'."
+    ifeq ($(GIT_BRANCH),master)
+		@echo "Current branch is 'master'. Proceeding with publishing."
+		poetry run python scripts/update_readme_links.py
+		poetry build
+		poetry publish --username=__token__ --password=${PYPI_PASSWORD}
+		start "" "https://pypi.org/project/pybas-automation/"
+    else
+		@echo "Publishing is only allowed from the 'master' branch."
+    endif
