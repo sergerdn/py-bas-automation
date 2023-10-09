@@ -1,0 +1,74 @@
+name: Python CI
+
+on:
+  push:
+    branches: [ "develop", "master" ]
+  pull_request:
+    branches: [ "develop", "master" ]
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-22.04 # https://github.com/actions/runner-images#available-images
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          lfs: true
+
+      - name: Setup Python and Poetry
+        uses: ./.github/actions/linux
+        with:
+          python-version: '3.11'
+
+      - name: Lint with mypy and flake8
+        env:
+          FINGERPRINT_KEY: ${{ secrets.FINGERPRINT_KEY }}
+        run: |
+          mkdir ./dist && touch ./dist/README.md
+          poetry run mypy pybas_automation/ tests/
+          poetry run flake8 pybas_automation/ tests/
+
+  test:
+    needs: [ lint ]
+    runs-on: ubuntu-22.04 # https://github.com/actions/runner-images#available-images
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          lfs: true
+
+      - name: Setup Python and Poetry
+        uses: ./.github/actions/linux
+        with:
+          python-version: '3.11'
+
+      - name: Run tests with pytest
+        env:
+          FINGERPRINT_KEY: ${{ secrets.FINGERPRINT_KEY }}
+        run: |
+          mkdir ./dist && touch ./dist/README.md
+          poetry run pytest -vv --cov=pybas_automation --cov-report=html tests/
+
+  poetry_build:
+    needs: [ lint, test ]
+    runs-on: ubuntu-22.04 # https://github.com/actions/runner-images#available-images
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          lfs: true
+
+      - name: Setup Python and Poetry
+        uses: ./.github/actions/linux
+        with:
+          python-version: '3.11'
+
+      - name: Lint with mypy and flake8
+        run: |
+          mkdir ./dist && touch ./dist/README.md
+          poetry check
+          poetry run python scripts/update_readme_links.py
+          poetry build
