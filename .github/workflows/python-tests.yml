@@ -10,78 +10,65 @@ permissions:
   contents: read
 
 jobs:
-  build:
+  lint:
     runs-on: ubuntu-22.04 # https://github.com/actions/runner-images#available-images
-
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
         with:
           lfs: true
 
-      - name: Checkout LFS objects
-        run: git lfs checkout
-
-      - name: Set up Python 3.11
-        uses: actions/setup-python@v4
+      - name: Setup Python and Poetry
+        uses: ./.github/actions/linux
         with:
-          python-version: "3.11"
+          python-version: '3.11'
 
-      - name: Install Poetry
-        uses: snok/install-poetry@v1
-        with:
-          virtualenvs-create: true
-          virtualenvs-in-project: true
-          installer-parallel: true
-
-      - name: Cache dependencies
-        uses: actions/cache@v3
-        with:
-          path: .venv
-          key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
-
-      - name: Install dependencies with Poetry
+      - name: Lint with mypy and flake8
+        env:
+          FINGERPRINT_KEY: ${{ secrets.FINGERPRINT_KEY }}
         run: |
           mkdir ./dist && touch ./dist/README.md
-          poetry install --no-interaction --with dev,cmd,cmd-dev,docs
-          poetry run playwright install chromium --with-deps
+          poetry run mypy pybas_automation/ tests/
+          poetry run flake8 pybas_automation/ tests/
 
   test:
-    needs: build
-    runs-on: ubuntu-22.04
-
+    needs: [ lint ]
+    runs-on: ubuntu-22.04 # https://github.com/actions/runner-images#available-images
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
         with:
           lfs: true
 
-      - name: Checkout LFS objects
-        run: git lfs checkout
-
-      - name: Set up Python 3.11
-        uses: actions/setup-python@v4
+      - name: Setup Python and Poetry
+        uses: ./.github/actions/linux
         with:
-          python-version: "3.11"
-
-      - name: Install Poetry
-        uses: snok/install-poetry@v1
-        with:
-          virtualenvs-create: true
-          virtualenvs-in-project: true
-          installer-parallel: true
-
-      - name: Cache dependencies
-        uses: actions/cache@v3
-        with:
-          path: .venv
-          key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
-
-      - name: Install dependencies with Poetry
-        run: |
-          mkdir ./dist && touch ./dist/README.md
-          poetry install --no-interaction --with dev,cmd,cmd-dev,docs
-          poetry run playwright install chromium --with-deps
+          python-version: '3.11'
 
       - name: Run tests with pytest
         env:
           FINGERPRINT_KEY: ${{ secrets.FINGERPRINT_KEY }}
-        run: poetry run pytest -vv tests/
+        run: |
+          mkdir ./dist && touch ./dist/README.md
+          poetry run pytest -vv --cov=pybas_automation --cov-report=html tests/
+
+  poetry_build:
+    needs: [ lint, test ]
+    runs-on: ubuntu-22.04 # https://github.com/actions/runner-images#available-images
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          lfs: true
+
+      - name: Setup Python and Poetry
+        uses: ./.github/actions/linux
+        with:
+          python-version: '3.11'
+
+      - name: Lint with mypy and flake8
+        run: |
+          mkdir ./dist && touch ./dist/README.md
+          poetry check
+          poetry run python scripts/update_readme_links.py
+          poetry build

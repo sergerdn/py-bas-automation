@@ -10,10 +10,6 @@ inputs:
 runs:
   using: 'composite'
   steps:
-    - uses: actions/checkout@v3
-      with:
-        lfs: true
-
     - name: Checkout LFS objects
       shell: bash
       run: git lfs checkout
@@ -30,15 +26,41 @@ runs:
         virtualenvs-in-project: true
         installer-parallel: true
 
-    - name: Cache dependencies
+    - name: Cache python dependencies
       uses: actions/cache@v3
+      id: poetry-cache
       with:
         path: .venv
         key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
 
+    - name: Get installed Playwright version
+      id: playwright-version
+      shell: bash
+      run: |
+        echo "::set-output name=version::$(poetry show playwright | grep "version" | awk '{print $3}')"
+
+    - name: Cache playwright dependencies
+      uses: actions/cache@v3
+      id: playwright-cache
+      with:
+        path: ~/.cache/ms-playwright/
+        key: playwright-${{ runner.os }}-${{ steps.playwright-version.outputs.version }}
+
+    - name: Ensure python poetry installed
+      shell: bash
+      run: |
+        echo "playwright version: ${{ steps.playwright-version.outputs.version }}"
+        python --version
+        poetry --version
+
     - name: Install dependencies with Poetry
       shell: bash
+      if: steps.poetry-cache.outputs.cache-hit != 'true'
       run: |
         mkdir ./dist && touch ./dist/README.md
         poetry install --no-interaction
-        poetry run playwright install chromium --with-deps
+
+    - name: Install playwright dependencies with Poetry
+      shell: bash
+      if: steps.playwright-cache.outputs.cache-hit != 'true'
+      run: poetry run playwright install chromium --with-deps
