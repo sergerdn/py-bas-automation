@@ -8,3 +8,5 @@ logs/*
 dist/*
 !htmlcov/.gitkeep
 htmlcov/*
+!bas_release/.gitkeep
+bas_release/*
