@@ -1,0 +1,1 @@
+"""FingerprintSwitcher / Apply fingerprint."""
