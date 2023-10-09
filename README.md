@@ -241,3 +241,7 @@ with sync_playwright() as pw:
 Your ideas and contributions are highly valued. Please do not hesitate to open
 an [issue](https://github.com/sergerdn/py-bas-automation/issues/new) if you have suggestions, questions, or if you
 would like to contribute to its enhancement.
+
+## License
+
+[LICENSE](./LICENSE)
