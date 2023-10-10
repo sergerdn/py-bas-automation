@@ -78,3 +78,8 @@ publish:
     else
 		@echo "Publishing is only allowed from the 'master' branch."
     endif
+
+changelog:
+	#  npm install -g conventional-changelog-cli
+	#  angular, atom, codemirror, conventionalcommits, ember, eslint, express, jquery or jshint
+	conventional-changelog  -i CHANGELOG.md -s
