@@ -5,7 +5,7 @@ Utility functions for the application.
 from functools import wraps
 from time import time
 
-from pybas_automation.utils import get_logger
+from pybas_automation.utils.logger import get_logger
 
 logger = get_logger()
 

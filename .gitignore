@@ -10,3 +10,4 @@ dist/*
 htmlcov/*
 !bas_release/.gitkeep
 bas_release/*
+/pybas_automation.svg

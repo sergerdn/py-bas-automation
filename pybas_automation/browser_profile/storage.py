@@ -13,7 +13,7 @@ import filelock
 from pydantic import DirectoryPath
 
 from pybas_automation import STORAGE_SUBDIR
-from pybas_automation.browser_profile import BrowserProfile
+from pybas_automation.browser_profile.models import BrowserProfile
 from pybas_automation.browser_profile.settings import _filelock_filename, _fingerprint_raw_filename, _storage_dir
 from pybas_automation.fingerprint import BasFingerprintRequest, get_fingerprint
 from pybas_automation.utils import create_storage_dir_in_app_data, get_logger

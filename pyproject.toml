@@ -42,6 +42,7 @@ pydocstyle = "^6.3.0"
 pylint = { extras = ["spelling"], version = "^3.0.1" }
 pylint-pydantic = "^0.3.0"
 autopep8 = "^2.0.4"
+pydeps = "^1.12.17"
 
 [tool.poetry.group.cmd.dependencies]
 click = "^8.1.7"

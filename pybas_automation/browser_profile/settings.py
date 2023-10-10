@@ -15,7 +15,7 @@ _proxy_filename = FilePath("proxy.json")
 _filelock_filename = FilePath("tasks.lock")
 
 
-def _user_data_dir_default_factory() -> FilePath:
+def _user_data_dir_default_factory() -> DirectoryPath:
     """Return the default user data directory."""
 
     profiles_dir = create_storage_dir_in_app_data(storage_dir=_storage_dir)
@@ -24,4 +24,4 @@ def _user_data_dir_default_factory() -> FilePath:
         profiles_dir.mkdir()
 
     profile_name = tempfile.mkdtemp(dir=profiles_dir)
-    return FilePath(profile_name)
+    return DirectoryPath(profile_name)
