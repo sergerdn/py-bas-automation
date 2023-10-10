@@ -1,6 +1,6 @@
 ##  (2023-10-10)
 
-* fix: deserialize task in browser storage ([c8a0f0c](https://github.com/sergerdn/py-bas-automation/commit/c8a0f0c))
+* fix: deserialize task in browser storage (#11) ([c8f5f31](https://github.com/sergerdn/py-bas-automation/commit/c8f5f31)), closes [#11](https://github.com/sergerdn/py-bas-automation/issues/11)
 * fix(github-actions): remove pr_agent.yml ([a5de23d](https://github.com/sergerdn/py-bas-automation/commit/a5de23d))
 * chore: add LICENSE ([5a11117](https://github.com/sergerdn/py-bas-automation/commit/5a11117))
 * chore: update keywords in pyproject.toml ([ca6d574](https://github.com/sergerdn/py-bas-automation/commit/ca6d574))
