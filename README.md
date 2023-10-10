@@ -155,46 +155,149 @@ Please note that this is not currently recommended as the latest release may hav
 
 ## Advanced Usage
 
-Here's a basic example of using `py-bas-automation`:
+This guide introduces a Python script that integrates the `Browser Automation Studio` (BAS) with `py-bas-automation`.
+The
+purpose is to handle the creation of browser profiles through FingerprintSwitcher and manage tasks related to these
+profiles.
 
-- [Initial script](./cmd_initial.py) to create tasks:
+### [Initial script: cmd_initial.py](./cmd_initial.py)
+
+### Description:
+
+This script facilitates the integration between `BAS (Browser Automation Studio)` and `py-bas-automation`. It manages
+the creation of browser profiles using `FingerprintSwitcher` and generates tasks associated with these profiles.
+
+### Overview:
+
+- **Initialization**: Import essential modules and configure logging.
+- **Browser Profiles**: Use FingerprintSwitcher's fingerprint key to generate or manage browser profiles.
+- **Tasks Generation**: For each browser profile, create an associated task and store it.
 
 ```python
+"""
+This script facilitates the integration between BAS (Browser Automation Studio) and `py-bas-automation`.
+It handles the creation of browser profiles using FingerprintSwitcher and manages tasks associated with these profiles.
+"""
+
 import json
-from pybas_automation.task import BasTask, TaskStorage, TaskStorageModeEnum
+import logging
+import os
+
+import click
+from pydantic import FilePath
+
 from pybas_automation.browser_profile import BrowserProfileStorage
+from pybas_automation.task import BasTask, TaskStorage, TaskStorageModeEnum
 
-fingerprint_key = "your_fingerprint_key"
+logger = logging.getLogger("[cmd_worker]")
 
-# Create a new task
-task = BasTask()
 
-# Save the task to storage, default location is
-# C:\Users\{username}\AppData\Local\PyBASTasks
-task_storage = TaskStorage(mode=TaskStorageModeEnum.READ_WRITE)
-task_storage.save(task)
+def run(fingerprint_key: str, count_profiles: int) -> FilePath:
+    """
+    Initialize and run the script.
 
-# Initialize a browser profile storage, default location is 
-# C:\Users\{username}\AppData\Local\PyBASProfiles
-browser_profile_storage = BrowserProfileStorage(fingerprint_key=fingerprint_key)
+    :param fingerprint_key: Personal fingerprint key from FingerprintSwitcher.
+    :param count_profiles: Number of profiles to be created.
 
-# Create 20 fresh profiles on disk
-for _ in range(0, 20):
-    browser_profile = browser_profile_storage.new()
+    :return: Path to the generated tasks file.
+    """
 
-# Add created browser profiles to tasks
-for browser_profile in browser_profile_storage.load_all():
-    task = BasTask()
-    task.browser_settings.profile.profile_folder_path = browser_profile.profile_dir
-    task_storage.save(task=task)
+    # Initialize task storage with read-write access and clear it.
+    # The default storage location is C:\Users\{username}\AppData\Local\PyBASTasks
+    task_storage = TaskStorage(mode=TaskStorageModeEnum.READ_WRITE)
+    task_storage.clear()
 
-task_file_path = task_storage.task_file_path
+    # Initialize browser profiles using the given fingerprint key.
+    # The default profile storage location is C:\Users\{username}\AppData\Local\PyBASProfiles
+    browser_profile_storage = BrowserProfileStorage(fingerprint_key=fingerprint_key)
 
-# print path to tasks file for use it in BAS
-print(json.dumps({"tasks_file": str(task_file_path)}, indent=4))
+    needs = count_profiles - browser_profile_storage.count()
+
+    # Create any additional profiles if necessary
+    if needs > 0:
+        for _ in range(needs):
+            browser_profile = browser_profile_storage.new()
+            logger.debug("Created new profile: %s", browser_profile.profile_dir)
+
+    # Generate tasks corresponding to each profile
+    for browser_profile in browser_profile_storage.load_all()[:count_profiles]:
+        task = BasTask()
+        task.browser_settings.profile.profile_folder_path = browser_profile.profile_dir
+        task_storage.save(task=task)
+
+    logger.info("Total tasks generated: %d", task_storage.count())
+    task_storage.save_all()
+
+    return task_storage.task_file_path
+
+
+@click.command()
+@click.option(
+    "--bas_fingerprint_key",
+    help="Your personal fingerprint key of FingerprintSwitcher.",
+    required=True,
+)
+@click.option(
+    "--count_profiles",
+    help="Number of profiles.",
+    default=10,
+)
+def main(bas_fingerprint_key: str, count_profiles: int) -> None:
+    """
+    Entry point of the script. Sets up logging, validates the fingerprint key,
+    triggers the primary function, and prints the path to the tasks file.
+
+    :param bas_fingerprint_key: Personal fingerprint key from FingerprintSwitcher.
+    :param count_profiles: Number of profiles to be created.
+
+    :return: None.
+    """
+
+    import multiprocessing
+
+    process = multiprocessing.current_process()
+
+    # Configure logging settings
+    logging.basicConfig(
+        level=logging.DEBUG,
+        format=f"%(asctime)s {process.pid} %(levelname)s %(name)s %(message)s",
+        filename=os.path.join(os.path.dirname(__file__), "logs", "cmd_initial.log"),
+    )
+    logger.info("Script cmd_initial has started.")
+
+    # Ensure the fingerprint key is present
+    bas_fingerprint_key = bas_fingerprint_key.strip()
+    if not bas_fingerprint_key:
+        raise ValueError("bas_fingerprint_key is not provided")
+
+    # Invoke the main function to get the path to the tasks file
+    task_file_path = run(fingerprint_key=bas_fingerprint_key, count_profiles=count_profiles)
+
+    # Print the path for potential use in BAS
+    print(json.dumps({"tasks_file": str(task_file_path)}, indent=4))
+
+    logger.info("cmd_initial script execution completed.")
+
+
+if __name__ == "__main__":
+    main()
 ```
 
-- [Worker script](./cmd_worker.py) to retrieve the ws_endpoint from bas and handle the complex tasks:
+### [Worker script: cmd_worker.py](./cmd_worker.py)
+
+### Description:
+
+This script demonstrates how to execute tasks using the `Playwright` Python library in conjunction with the
+`pybas_automation` package. The primary goal is to fetch task data, connect to an existing browser instance using
+`Playwright`, and perform actions on a webpage.
+
+### Overview:
+
+- **Initialization**: Import necessary libraries and set up our task id and debugging port.
+- **Task Storage**: Fetch a specific task from our task storage.
+- **Remote Browser Connection**: Use the remote debugging port to get a WebSocket endpoint, which allows us to connect
+  to an existing browser instance.
+- **Playwright Actions**: Utilize Playwright to interact with a web page.
 
 ```python
 from uuid import UUID
@@ -202,30 +305,34 @@ from playwright.sync_api import sync_playwright
 from pybas_automation.task import BasTask, TaskStorage, TaskStorageModeEnum
 from pybas_automation.browser_remote import BrowserRemote
 
-# skip code to getting ws_endpoint from cmd line ...
+# 1. Initialization
+# For demonstration purposes, we're using hardcoded values. In a real scenario, these will be fetched dynamically.
 task_id = UUID("some_task_id_that_we_getting_from_cmd_line_from_BAS")
-
-# Create a new task storage
-task_storage = TaskStorage(mode=TaskStorageModeEnum.READ)
-found_task = task_storage.get(task_id=task_id)
-# Do something with task if needed...
-# Save the task to storage, default location is
-
-# Skip code to getting remote_debugging_port from cmd line ...
 remote_debugging_port = 9222
 
+# 2. Task Storage
+# Create a new task storage instance in READ mode to fetch tasks.
+task_storage = TaskStorage(mode=TaskStorageModeEnum.READ)
+found_task = task_storage.get(task_id=task_id)
+# Note: You can manipulate or inspect the `found_task` as needed.
+
+# 3. Remote Browser Connection
+# Create an instance of BrowserRemote with the specified debugging port.
 remote_browser = BrowserRemote(remote_debugging_port=remote_debugging_port)
 
-# Get ws_endpoint from remote_debugging_port
-remote_browser.find_ws()
+# Fetch the WebSocket (ws) endpoint using the debugging port.
+if not remote_browser.find_ws():
+    raise ValueError("Failed to find ws endpoint")
+
 ws_endpoint = remote_browser.ws_endpoint
 
+# 4. Playwright Actions
 with sync_playwright() as pw:
-    # Connect to an existing browser instance
+    # Connect to an existing browser instance using the fetched WebSocket endpoint.
     browser = pw.chromium.connect_over_cdp(ws_endpoint)
-    # Get the existing pages in the connected browser instance
+    # Access the main page of the connected browser instance.
     page = browser.contexts[0].pages[0]
-    # Doing some work with page
+    # Perform actions using Playwright, like navigating to a webpage.
     page.goto("https://playwright.dev/python/")
 ```
 
@@ -239,5 +346,9 @@ with sync_playwright() as pw:
 ## Contributing
 
 Your ideas and contributions are highly valued. Please do not hesitate to open
-an [issue](https://github.com/sergerdn/py-bas-automation/issues/new) if you have suggestions, questions, or if you
-would like to contribute to its enhancement.
+an [issue](https://github.com/sergerdn/py-bas-automation/issues/new) if you have suggestions, questions, or if you would
+like to contribute to its enhancement.
+
+## License
+
+[LICENSE](./LICENSE)

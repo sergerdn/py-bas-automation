@@ -43,6 +43,8 @@ lint_fix:
 	#poetry run autopep8 --in-place --aggressive --aggressive  pybas_automation/utils/utils.py
 
 lint:
+	mkdir ./dist || echo ""
+	touch ./dist/README.md
 	poetry check
 	poetry run mypy cmd_initial.py cmd_worker.py pybas_automation/ tests/ || echo ""
 	poetry run flake8 cmd_initial.py cmd_worker.py pybas_automation/ tests/ || echo ""
@@ -78,3 +80,8 @@ publish:
     else
 		@echo "Publishing is only allowed from the 'master' branch."
     endif
+
+changelog:
+	#  npm install -g conventional-changelog-cli
+	#  angular, atom, codemirror, conventionalcommits, ember, eslint, express, jquery or jshint
+	conventional-changelog  -i CHANGELOG.md -s
