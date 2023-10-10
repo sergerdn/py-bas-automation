@@ -1,0 +1,56 @@
+name: Python Windows CI
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+
+  test:
+    runs-on: windows-2022 # https://github.com/actions/runner-images#available-images
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          lfs: true
+
+      - name: Setup Python and Poetry
+        uses: ./.github/actions/windows
+        with:
+          python-version: '3.11'
+
+      - name: Run tests with pytest
+        shell: bash
+        env:
+          FINGERPRINT_KEY: ${{ secrets.FINGERPRINT_KEY }}
+        run: |
+          poetry run pytest -vv --cov=pybas_automation --cov-report=html tests/
+
+  test_run_cmd_initial_cmd:
+    runs-on: windows-2022 # https://github.com/actions/runner-images#available-images
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          lfs: true
+
+      - name: Setup Python and Poetry
+        uses: ./.github/actions/windows
+        with:
+          python-version: '3.11'
+
+      - name: Run run_cmd_initial_cmd
+        shell: bash
+        env:
+          FINGERPRINT_KEY: ${{ secrets.FINGERPRINT_KEY }}
+        run: |
+          poetry run python cmd_initial.py --bas_fingerprint_key="${{ secrets.FINGERPRINT_KEY }}" --count_profiles=1

@@ -85,3 +85,6 @@ changelog:
 	#  npm install -g conventional-changelog-cli
 	#  angular, atom, codemirror, conventionalcommits, ember, eslint, express, jquery or jshint
 	conventional-changelog  -i CHANGELOG.md -s
+
+run_pydeps:
+	pydeps pybas_automation

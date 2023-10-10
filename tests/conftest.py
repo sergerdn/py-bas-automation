@@ -6,10 +6,32 @@ from urllib.parse import parse_qs, urlencode, urlparse
 from zipfile import ZipFile
 
 import pytest
+from _pytest.monkeypatch import MonkeyPatch
 from playwright.sync_api import BrowserContext, sync_playwright
 from pydantic import DirectoryPath
 
 from tests import FIXTURES_DIR, _find_free_port
+
+
+@pytest.fixture(scope="function", autouse=True)
+def _mock_app_data_dir() -> Generator[None, None, None]:
+    """
+    Mocks the app data directory for the duration of the tests.
+    """
+
+    monkeypatch = MonkeyPatch()
+    test_dir = tempfile.mkdtemp(prefix="pybas-mocks_test_")
+
+    assert os.path.exists(test_dir)
+    assert os.path.isdir(test_dir)
+
+    monkeypatch.setenv("LOCALAPPDATA", test_dir)
+    try:
+        yield  # run tests
+    finally:
+        monkeypatch.undo()
+        if os.path.exists(test_dir):
+            shutil.rmtree(test_dir)
 
 
 @pytest.fixture(scope="module")

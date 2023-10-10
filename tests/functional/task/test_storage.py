@@ -1,7 +1,6 @@
 import os
-import shutil
 import tempfile
-from typing import Generator, List
+from typing import List
 from uuid import UUID, uuid4
 
 import pytest
@@ -28,22 +27,6 @@ def create_task(profiles_dir: DirectoryPath, fingerprint_str: str) -> BasTask:
 
 
 class TestTaskStorage:
-    @pytest.fixture(autouse=True)
-    def run_around_tests(self) -> Generator[None, None, None]:
-        monkeypatch = MonkeyPatch()
-        test_dir = tempfile.mkdtemp(prefix="pybas-task-storage-test_")
-
-        assert os.path.exists(test_dir)
-        assert os.path.isdir(test_dir)
-
-        monkeypatch.setenv("LOCALAPPDATA", test_dir)
-        try:
-            yield
-        finally:
-            monkeypatch.undo()
-            if os.path.exists(test_dir):
-                shutil.rmtree(test_dir)
-
     def test_fail_storage_dir(self) -> None:
         storage_dir = DirectoryPath("some_dir")
         with pytest.raises(ValueError):
