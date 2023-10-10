@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pybas-automation"
-version = "0.1.1"
+version = "0.1.3"
 description = "A Python library for automating BrowserAutomationStudio (BAS) using headless Chromium browsers and Windows GUI program."
 authors = ["sergerdn <64213648+sergerdn@users.noreply.github.com>"]
 homepage = "https://github.com/sergerdn/py-bas-automation"
@@ -12,7 +12,7 @@ classifiers = [
 ]
 readme = "dist/README.md"
 license = "MIT"
-#include = ["docs/"]
+include = ["CHANGELOG.md"]
 
 
 [tool.poetry.dependencies]
