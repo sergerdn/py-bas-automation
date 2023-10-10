@@ -1,8 +1,9 @@
+import json
 import os
 
 import pytest
 
-from pybas_automation.browser_profile import BrowserProfileStorage
+from pybas_automation.browser_profile import BrowserProfile, BrowserProfileStorage
 from tests.functional.browser_profile.browser_base import BrowserProfileBase
 
 
@@ -60,4 +61,14 @@ class TestBrowserProfileStorage(BrowserProfileBase):
         profiles = new_browser_profile_storage.load_all()
 
         assert len(profiles) == 10
-        pass
+
+    def test_serialize_deserialize(self, fingerprint_key: str, fingerprint_str: str) -> None:
+        browser_profile_storage = BrowserProfileStorage()
+
+        browser_profile = browser_profile_storage.new(fingerprint_raw=fingerprint_str, profile_name="cool_profile_1")
+
+        serialized = json.dumps(browser_profile.model_dump(mode="json"))
+        assert serialized is not None
+
+        deserialized = BrowserProfile(**json.loads(serialized))
+        assert deserialized is not None
