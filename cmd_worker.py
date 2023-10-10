@@ -1,6 +1,8 @@
 """
-This script is responsible for running tasks.
-It gets task data from BAS, runs a Playwright script, and saves the screenshots to the `reports` folder.
+This script manages task executions.
+
+It retrieves task specifics from BAS, runs the corresponding Playwright script, and then saves
+the produced screenshots to the `reports` folder.
 """
 
 import asyncio
@@ -16,108 +18,92 @@ from playwright.async_api import async_playwright
 from pybas_automation.browser_remote import BrowserRemote
 from pybas_automation.task import BasTask, TaskStorage, TaskStorageModeEnum
 
+# Load environment variables
 load_dotenv()
 
-
 logger = logging.getLogger("[cmd_worker]")
-
-
 _debug = os.environ.get("DEBUG", "False").lower() == "true"
 
 
 async def run(task_id: UUID, remote_debugging_port: int) -> None:
     """
-    Run worker.
+    Fetch the specified task and run the associated worker.
 
-    :param task_id: Task id of task.
-    :param remote_debugging_port: CDP remote debugging port.♣
+    :param task_id: Unique identifier of the desired task.
+    :param remote_debugging_port: Port used for Chrome DevTools Protocol (CDP) remote debugging.
 
     :return: None.
     """
 
+    # Validate input parameters
     if not task_id:
-        raise ValueError("task_id is not set")
-
+        raise ValueError("task_id is not provided")
     if not remote_debugging_port:
-        raise ValueError("remote_debugging_port is not set")
+        raise ValueError("remote_debugging_port is not provided")
 
-    logger.debug("getting task_id: %s", task_id)
+    logger.debug("Retrieving task with ID: %s", task_id)
 
     task_storage = TaskStorage(mode=TaskStorageModeEnum.READ)
 
+    # Ensure there are tasks to load
     if not task_storage.load_all():
-        raise ValueError("No tasks to load")
+        raise ValueError("No tasks available for processing")
 
+    # Fetch the specified task
     found_task = task_storage.get(task_id=task_id)
     if not found_task:
-        raise ValueError(f"Cannot find task for task_id: {task_id}")
+        raise ValueError(f"Task with ID {task_id} not found")
 
-    logger.info("Found task for task_id: %s", task_id)
-
+    # Debug: Print the task details
     print(json.dumps(found_task.model_dump(mode="json"), indent=4))
 
     profile_folder_path = found_task.browser_settings.profile.profile_folder_path
-
     remote_browser = BrowserRemote(remote_debugging_port=remote_debugging_port)
     remote_browser.find_ws()
 
-    logger.info("Found ws %s for for profile: %s", remote_browser.ws_endpoint, profile_folder_path)
     if not remote_browser.ws_endpoint:
-        raise ValueError(f"Cannot get ws endpoint for profile: {profile_folder_path}")
+        raise ValueError(f"Unable to fetch websocket endpoint for profile: {profile_folder_path}")
 
     await work(remote_browser.ws_endpoint, found_task)
 
 
 async def work(ws_endpoint: str, task: BasTask) -> None:
     """
-    Work playwright script to make screenshots.
+    Execute a Playwright script to capture a screenshot.
 
-    :param ws_endpoint: Websocket endpoint.
-    :param task: Task instance.
+    :param ws_endpoint: WebSocket endpoint used to connect to the browser.
+    :param task: Instance of the task to be processed.
 
     :return: None.
     """
 
-    logger.debug("ws_endpoint: %s", ws_endpoint)
     async with async_playwright() as pw:
-        # Connect to an existing browser instance
         browser = await pw.chromium.connect_over_cdp(ws_endpoint)
-        logger.info("Connected to browser: %s", browser)
-
-        # Get the existing pages in the connected browser instance
         page = browser.contexts[0].pages[0]
 
-        task_id = task.task_id
-
+        # Navigate to the Playwright documentation and wait for it to load
         await page.goto("https://playwright.dev/python/")
         await asyncio.sleep(5)
 
-        current_url = page.url
-        logger.debug("current url: %s", current_url)
-
-        # Take a screenshot and save it to the specified file
-        screenshot_filename = os.path.join(os.path.dirname(__file__), "reports", f"{task_id}_screenshot.png")
+        # Save a screenshot of the current page
+        screenshot_filename = os.path.join(os.path.dirname(__file__), "reports", f"{task.task_id}_screenshot.png")
         await page.screenshot(path=screenshot_filename, full_page=True)
 
 
 @click.command()
-@click.option(
-    "--task_id",
-    help="Task id of task.",
-    required=True,
-)
+@click.option("--task_id", help="Unique identifier of the task.", required=True)
 @click.option(
     "--remote_debugging_port",
-    help="CDP remote debugging port.",
+    help="Port number used for Chrome DevTools Protocol (CDP) remote debugging.",
     type=int,
     required=True,
 )
 def main(task_id: UUID, remote_debugging_port: int) -> None:
     """
-    Main function.
+    Set up logging and initiate the task execution process.
 
-    :param task_id: Task id of task.
-    :param remote_debugging_port: CDP remote debugging port.
+    :param task_id: Unique identifier of the task.
+    :param remote_debugging_port: Port used for CDP remote debugging.
 
     :return: None.
     """
@@ -126,15 +112,14 @@ def main(task_id: UUID, remote_debugging_port: int) -> None:
 
     process = multiprocessing.current_process()
 
+    # Logging configuration
     logging.basicConfig(
         level=logging.DEBUG,
         format=f"%(asctime)s {process.pid} %(levelname)s %(name)s %(message)s",
         filename=os.path.join(os.path.dirname(__file__), "logs", "cmd_worker.log"),
     )
 
-    logger.info(
-        "Started cmd_worker: %s, task_id: %s, remote_debugging_port: %d", process.pid, task_id, remote_debugging_port
-    )
+    logger.info("Initializing cmd_worker with PID: %s", process.pid)
 
     asyncio.run(run(task_id=task_id, remote_debugging_port=remote_debugging_port))
 

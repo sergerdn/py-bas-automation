@@ -43,6 +43,8 @@ lint_fix:
 	#poetry run autopep8 --in-place --aggressive --aggressive  pybas_automation/utils/utils.py
 
 lint:
+	mkdir ./dist || echo ""
+	touch ./dist/README.md
 	poetry check
 	poetry run mypy cmd_initial.py cmd_worker.py pybas_automation/ tests/ || echo ""
 	poetry run flake8 cmd_initial.py cmd_worker.py pybas_automation/ tests/ || echo ""
