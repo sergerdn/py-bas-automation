@@ -5,7 +5,10 @@ description = "A Python library for automating BrowserAutomationStudio (BAS) usi
 authors = ["sergerdn <64213648+sergerdn@users.noreply.github.com>"]
 homepage = "https://github.com/sergerdn/py-bas-automation"
 repository = "https://github.com/sergerdn/py-bas-automation"
-keywords = ["headless Chromium", "Python browser automation"]
+keywords = [
+    "headless Chromium", "Python browser automation", "browser fingerprint protection",
+    "prevent browser fingerprinting"
+]
 classifiers = [
     "Topic :: Internet :: WWW/HTTP :: Browsers",
     "Topic :: Software Development :: Libraries :: Python Modules"
