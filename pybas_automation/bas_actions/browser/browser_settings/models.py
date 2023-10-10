@@ -3,7 +3,7 @@
 from enum import Enum
 from typing import List, Union
 
-from pydantic import BaseModel, DirectoryPath, Field
+from pydantic import BaseModel, DirectoryPath, Field, field_validator
 
 from pybas_automation import default_model_config
 from pybas_automation.bas_actions.browser.browser_settings import browser_command_line_factory
@@ -91,7 +91,7 @@ class BasActionBrowserSettingsProfile(BaseModel):
     # already exists, BAS will use it as profile and restore all data from it like cookies, localstorage,
     # etc. By default, browser stores all profile data in temporary folder, you can use "temporary" keyword to switch
     # to new temporary profile. Empty string - Don't change temporary - Switch to new temporary profile
-    profile_folder_path: DirectoryPath = Field(default="")
+    profile_folder_path: Union[DirectoryPath, str] = Field(default=DirectoryPath("."))
 
     # In case if profile folder already exists and has fingerprint data,
     # tells BAS to apply fingerprint used latest for that profile.
@@ -100,6 +100,13 @@ class BasActionBrowserSettingsProfile(BaseModel):
     # In case if profile folder already exists and has proxy data,
     # tells BAS to apply proxy used latest for that profile.
     always_load_proxy_from_profile_folder: bool = Field(default=False)
+
+    @field_validator("profile_folder_path")
+    @classmethod
+    def profile_folder_path_validate(cls, v: Union[DirectoryPath, str]) -> DirectoryPath:
+        """Validate profile_folder_path field."""
+
+        return DirectoryPath(v)
 
 
 class BasActionBrowserSettings(BaseModel):
