@@ -4,11 +4,10 @@ import os
 import pytest
 
 from pybas_automation.browser_profile import BrowserProfile, BrowserProfileStorage
-from tests.functional.browser_profile.browser_base import BrowserProfileBase
 
 
 @pytest.mark.vcr()
-class TestBrowserProfileStorage(BrowserProfileBase):
+class TestBrowserProfileStorage:
     def test_create_no_fingerprint(self, fingerprint_key: str) -> None:
         browser_profile_storage = BrowserProfileStorage(fingerprint_key=fingerprint_key)
         assert browser_profile_storage.count() == 0

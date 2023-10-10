@@ -5,7 +5,7 @@ from pydantic import DirectoryPath
 from pybas_automation.browser_remote import BrowserRemote, BrowserRemoteDebuggingPortNotAvailableError
 
 
-class TestBrowserProcess:
+class TestBrowserRemote:
     def test_expected_failed(self, free_port: int) -> None:
         remote_debugging_port = free_port
 

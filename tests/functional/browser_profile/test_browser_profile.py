@@ -6,11 +6,10 @@ import pytest
 from pybas_automation.browser_profile import (BrowserProfile, BrowserProfileProxy, BrowserProfileProxyEnum,
                                               BrowserProfileStorage)
 from pybas_automation.fingerprint import BasFingerprintRequest, get_fingerprint
-from tests.functional.browser_profile.browser_base import BrowserProfileBase
 
 
 @pytest.mark.vcr()
-class TestBrowserProfile(BrowserProfileBase):
+class TestBrowserProfile:
     def test_save_fingerprint(self, fingerprint_key: str) -> None:
         request_data = BasFingerprintRequest(key=fingerprint_key)
         fingerprint_raw = get_fingerprint(request_data)
