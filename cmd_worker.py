@@ -6,6 +6,7 @@ the produced screenshots to the `reports` folder.
 """
 
 import asyncio
+import codecs
 import json
 import logging
 import os
@@ -13,7 +14,7 @@ from uuid import UUID
 
 import click
 from dotenv import load_dotenv
-from playwright.async_api import async_playwright
+from playwright.async_api import Locator, async_playwright
 
 from pybas_automation.browser_remote import BrowserRemote
 from pybas_automation.task import BasTask, TaskStorage, TaskStorageModeEnum
@@ -77,6 +78,30 @@ async def work(ws_endpoint: str, task: BasTask) -> None:
     :return: None.
     """
 
+    async def simulate_click(elem: Locator) -> None:
+        """
+         Simulates mouse move and click on the provided element locator.
+
+        :param elem: Element locator.
+        """
+
+        # Get the bounding box of the element (i.e., its location and size)
+        bounding_box = await elem.bounding_box()
+        if not bounding_box:
+            raise ValueError(f"Unable to fetch bounding box for element: {elem}")
+
+        # Calculate the coordinates for the click (center of the element)
+        x = int(bounding_box["x"] + bounding_box["width"] / 2)
+        y = int(bounding_box["y"] + bounding_box["height"] / 2)
+
+        # Simulate the mouse move and click at the element's location
+        # Note: The mouse move is not required, but it is included for demonstration purposes
+        await elem.page.mouse.move(x, y)
+        await asyncio.sleep(1)
+
+        await elem.page.mouse.click(x, y)
+        await asyncio.sleep(1)
+
     async with async_playwright() as pw:
         browser = await pw.chromium.connect_over_cdp(ws_endpoint)
         page = browser.contexts[0].pages[0]
@@ -84,6 +109,12 @@ async def work(ws_endpoint: str, task: BasTask) -> None:
         # Navigate to the Playwright documentation and wait for it to load
         await page.goto("https://playwright.dev/python/")
         await asyncio.sleep(5)
+
+        # Find the element
+        h1_element = page.locator("xpath=//a[@class='getStarted_Sjon']")
+
+        # Use the simulate_click function
+        await simulate_click(h1_element)
 
         # Save a screenshot of the current page
         screenshot_filename = os.path.join(os.path.dirname(__file__), "reports", f"{task.task_id}_screenshot.png")
@@ -98,15 +129,32 @@ async def work(ws_endpoint: str, task: BasTask) -> None:
     type=int,
     required=True,
 )
-def main(task_id: UUID, remote_debugging_port: int) -> None:
+@click.option(
+    "--debug",
+    help="Enable debug mode.",
+    is_flag=True,
+)
+def main(task_id: UUID, remote_debugging_port: int, debug: bool) -> None:
     """
     Set up logging and initiate the task execution process.
 
     :param task_id: Unique identifier of the task.
     :param remote_debugging_port: Port used for CDP remote debugging.
+    :param debug: Enable debug mode.
 
     :return: None.
     """
+
+    if debug:
+        logger.debug("Debug mode enabled")
+
+        # Playwright debug logging
+        os.environ["DEBUG"] = "pw:protocol"
+
+        filename = os.path.join(os.path.dirname(__file__), "logs", "cdp_log.txt")
+        import sys  # pylint: disable=import-outside-toplevel
+
+        sys.stderr = codecs.open(filename, "w", "utf-8")
 
     import multiprocessing  # pylint: disable=import-outside-toplevel
 
