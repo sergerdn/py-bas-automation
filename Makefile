@@ -81,10 +81,13 @@ publish:
 		@echo "Publishing is only allowed from the 'master' branch."
     endif
 
-changelog:
-	#  npm install -g conventional-changelog-cli
-	#  angular, atom, codemirror, conventionalcommits, ember, eslint, express, jquery or jshint
-	conventional-changelog  -i CHANGELOG.md -s
+bump_version:
+	echo "Current branch is '${GIT_BRANCH}'."
+    ifeq ($(GIT_BRANCH),master)
+		cz bump --check-consistency --changelog --increment=patch
+	 else
+		@echo "Bump vesrion is only allowed from the 'master' branch."
+    endif
 
 run_pydeps:
 	pydeps pybas_automation
