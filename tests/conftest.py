@@ -36,7 +36,11 @@ def _mock_app_data_dir() -> Generator[None, None, None]:
 
 @pytest.fixture(scope="module")
 def fingerprint_key() -> Union[str, None]:
-    return os.environ.get("FINGERPRINT_KEY", None)
+    fingerprint_key = os.environ.get("FINGERPRINT_KEY", None)
+    if not fingerprint_key:
+        raise ValueError("FINGERPRINT_KEY not set")
+
+    return fingerprint_key
 
 
 @pytest.fixture(scope="module")
