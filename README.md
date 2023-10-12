@@ -303,7 +303,7 @@ This script demonstrates how to execute tasks using the `Playwright` Python libr
 from uuid import UUID
 from playwright.sync_api import sync_playwright
 from pybas_automation.task import BasTask, TaskStorage, TaskStorageModeEnum
-from pybas_automation.browser_remote import BrowserRemote
+from pybas_automation.browser_automator import BrowserAutomator
 
 # 1. Initialization
 # For demonstration purposes, we're using hardcoded values. In a real scenario, these will be fetched dynamically.
@@ -317,23 +317,17 @@ found_task = task_storage.get(task_id=task_id)
 # Note: You can manipulate or inspect the `found_task` as needed.
 
 # 3. Remote Browser Connection
-# Create an instance of BrowserRemote with the specified debugging port.
-remote_browser = BrowserRemote(remote_debugging_port=remote_debugging_port)
+async with BrowserAutomator(remote_debugging_port=remote_debugging_port) as automator:
+    ws_endpoint = automator.get_ws_endpoint()
 
-# Fetch the WebSocket (ws) endpoint using the debugging port.
-if not remote_browser.find_ws():
-    raise ValueError("Failed to find ws endpoint")
-
-ws_endpoint = remote_browser.ws_endpoint
-
-# 4. Playwright Actions
-with sync_playwright() as pw:
-    # Connect to an existing browser instance using the fetched WebSocket endpoint.
-    browser = pw.chromium.connect_over_cdp(ws_endpoint)
-    # Access the main page of the connected browser instance.
-    page = browser.contexts[0].pages[0]
-    # Perform actions using Playwright, like navigating to a webpage.
-    page.goto("https://playwright.dev/python/")
+    # 4. Playwright Actions
+    with sync_playwright() as pw:
+        # Connect to an existing browser instance using the fetched WebSocket endpoint.
+        browser = pw.chromium.connect_over_cdp(ws_endpoint)
+        # Access the main page of the connected browser instance.
+        page = browser.contexts[0].pages[0]
+        # Perform actions using Playwright, like navigating to a webpage.
+        page.goto("https://playwright.dev/python/")
 ```
 
 ## Planned Improvements:

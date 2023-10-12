@@ -86,7 +86,7 @@ bump_version:
     ifeq ($(GIT_BRANCH),master)
 		cz bump --check-consistency --changelog --increment=patch
 	 else
-		@echo "Bump vesrion is only allowed from the 'master' branch."
+		@echo "Bump version is only allowed from the 'master' branch."
     endif
 
 run_pydeps:
