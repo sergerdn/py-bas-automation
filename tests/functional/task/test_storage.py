@@ -7,12 +7,13 @@ import pytest
 from _pytest.monkeypatch import MonkeyPatch
 from pydantic import DirectoryPath, FilePath
 
+from pybas_automation.bas_actions.browser.proxy import BasActionBrowserProxy, BasActionBrowserProxyTypeEnum
 from pybas_automation.browser_profile import BrowserProfileStorage
 from pybas_automation.browser_profile.models import BrowserProfile
 from pybas_automation.task import BasTask, TaskDuplicateError, TaskStorage, TaskStorageModeEnum
 
 
-def create_task(profiles_dir: DirectoryPath, fingerprint_str: str) -> BasTask:
+def create_task(profiles_dir: DirectoryPath, fingerprint_str: str, with_proxy: bool = False) -> BasTask:
     one_profile_dir = DirectoryPath(tempfile.mkdtemp(prefix="profile_", dir=profiles_dir))
     browser_profile = BrowserProfile(profile_dir=one_profile_dir)
 
@@ -20,8 +21,19 @@ def create_task(profiles_dir: DirectoryPath, fingerprint_str: str) -> BasTask:
 
     browser_profile.fingerprint_raw = fingerprint_str
     browser_profile_storage = BrowserProfileStorage()
+    if with_proxy:
+        proxy = BasActionBrowserProxy(
+            server="127.0.0.1",
+            port=9999,
+            type=BasActionBrowserProxyTypeEnum.HTTP,
+            login="user",
+            password="pass",
+        )
+        browser_profile.proxy = proxy
+
     browser_profile_storage.save(browser_profile=browser_profile)
     task.browser_settings.profile.profile_folder_path = browser_profile.profile_dir
+    task.browser_settings.proxy = browser_profile.proxy
 
     return task
 
@@ -148,3 +160,11 @@ class TestTaskStorage:
             task_storage.save(task=task)
 
         print(task_storage)  # repr
+
+    def test_proxy(self, storage_dir: DirectoryPath, profiles_dir: DirectoryPath, fingerprint_str: str) -> None:
+        task_storage_write = TaskStorage(storage_dir=storage_dir, mode=TaskStorageModeEnum.READ_WRITE)
+        task = create_task(profiles_dir=profiles_dir, fingerprint_str=fingerprint_str, with_proxy=True)
+
+        assert task.browser_settings.proxy is not None
+        assert task is not None
+        task_storage_write.save(task=task)

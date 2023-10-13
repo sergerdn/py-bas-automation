@@ -4,17 +4,20 @@ Browser storage module.
 This module is responsible for storing browser profiles to disk and  loading metadata of browser profiles from disk
 into memory.
 """
-
+import json
 import os
 import tempfile
 from typing import List, Union
 
 import filelock
+from fastapi.encoders import jsonable_encoder
 from pydantic import DirectoryPath
 
 from pybas_automation import STORAGE_SUBDIR
+from pybas_automation.bas_actions.browser.proxy import BasActionBrowserProxy
 from pybas_automation.browser_profile.models import BrowserProfile
-from pybas_automation.browser_profile.settings import _filelock_filename, _fingerprint_raw_filename, _storage_dir
+from pybas_automation.browser_profile.settings import (_filelock_filename, _fingerprint_raw_filename, _proxy_filename,
+                                                       _storage_dir)
 from pybas_automation.fingerprint import BasFingerprintRequest, get_fingerprint
 from pybas_automation.utils import create_storage_dir_in_app_data, get_logger
 
@@ -122,9 +125,14 @@ class BrowserProfileStorage:
         sub_dir.mkdir(parents=True, exist_ok=True)
 
         fingerprint_filename = sub_dir.joinpath(_fingerprint_raw_filename)
+        proxy_filename = sub_dir.joinpath(_proxy_filename)
 
         if browser_profile.fingerprint_raw is not None:
             fingerprint_filename.open("w", encoding="utf-8").write(browser_profile.fingerprint_raw)
+
+        if browser_profile.proxy is not None:
+            proxy_filename = sub_dir.joinpath(proxy_filename)
+            proxy_filename.open("w", encoding="utf-8").write(json.dumps(jsonable_encoder(browser_profile.proxy)))
 
     def load(self, profile_name: str) -> BrowserProfile:
         """
@@ -154,6 +162,11 @@ class BrowserProfileStorage:
             if fingerprint_filename.exists():
                 fingerprint_raw = fingerprint_filename.open("r", encoding="utf-8").read()
                 browser_profile.fingerprint_raw = fingerprint_raw
+
+            proxy_filename = sub_dir.joinpath(_proxy_filename)
+            if proxy_filename.exists():
+                _proxy = json.loads(proxy_filename.open("r", encoding="utf-8").read())
+                browser_profile.proxy = BasActionBrowserProxy(**_proxy)
 
             self._profiles.append(browser_profile)
 

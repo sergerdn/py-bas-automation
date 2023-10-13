@@ -1,7 +1,8 @@
 """
 Utility functions for the application.
 """
-
+import random
+import string
 from functools import wraps
 from time import time
 
@@ -24,3 +25,13 @@ def timing(f):  # type: ignore
         return result
 
     return wrap
+
+
+def random_string(length: int = 10) -> str:
+    """
+    Generate a random string.
+
+    :param length: The length of the string.
+    """
+
+    return "".join(random.choices(string.ascii_lowercase + string.digits, k=length))
