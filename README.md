@@ -19,7 +19,9 @@ customizable Windows GUI program, while controlling it with Python ❤️.
   through [BrowserAutomationStudio](https://bablosoft.com/shop/BrowserAutomationStudio).
 - **Unique Fingerprint Feature:** The application includes a unique feature that assigns a  `fingerprint`  to each
   browser instance using [FingerprintSwitcher](https://fingerprints.bablosoft.com/). Please be aware that this is
-  **paid** feature.
+  **paid** service.
+- **Proxy Support:** The application supports proxy providers such as [Brightdata](https://brightdata.com/). Please
+  note that this is a **paid** service.
 - **Playwright Control:** The application leverages [Playwright](https://playwright.dev/python/) to efficiently manage
   and control BAS.
 
@@ -51,7 +53,7 @@ This is an example of the created `tasks_file`:
 ```json
 [
   {
-    "task_id": "519e8739-dd93-4ad9-b3da-22c913a40c69",
+    "task_id": "9683607e-2458-4adb-9b14-7e99123bf34d",
     "browser_settings": {
       "components": {
         "widevine": "enable",
@@ -73,11 +75,17 @@ This is an example of the created `tasks_file`:
         "--lang=en"
       ],
       "profile": {
-        "profile_folder_path": "C:\\Users\\Administrator\\AppData\\Local\\PyBASProfiles\\tmp0y03_e5x",
+        "profile_folder_path": "C:\\Users\\Administrator\\AppData\\Local\\PyBASProfiles\\tmp3az8nj96",
         "always_load_fingerprint_from_profile_folder": false,
         "always_load_proxy_from_profile_folder": false
       },
-      "proxy": null,
+      "proxy": {
+        "server": "brd.superproxy.io",
+        "port": "22225",
+        "is_http": false,
+        "name": "brd-customer-hl___redacted__",
+        "password": "__redacted__"
+      },
       "fingerprint": {
         "safe_canvas": true,
         "use_perfect_canvas": true,
@@ -172,8 +180,10 @@ the creation of browser profiles using `FingerprintSwitcher` and generates tasks
 ### Overview:
 
 - **Initialization**: Import essential modules and configure logging.
-- **Browser Profiles**: Use FingerprintSwitcher's fingerprint key to generate or manage browser profiles.
-- **Tasks Generation**: For each browser profile, create an associated task and store it.
+- **Browser Profiles**: Utilize `FingerprintSwitcher`'s fingerprint key to generate or manage browser profiles.
+- **Proxy Support**: Configure proxy settings for each browser profile in full-automatic mode by handling proxy
+  providers. Note: at the moment only [`Brightdata`](https://brightdata.com/) is supported.
+- **Tasks Generation**: Generate an associated task for each browser profile and store it.
 
 ```python
 """

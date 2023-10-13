@@ -1,6 +1,6 @@
 import json
 import os
-from typing import Generator
+from typing import Generator, Dict
 
 import pytest
 from click.testing import CliRunner
@@ -27,3 +27,24 @@ class TestCmdInitial:
         assert tasks_file is not None
 
         assert os.path.exists(tasks_file) is True
+
+    def test_main_proxy(
+            self, runner: CliRunner, fingerprint_key: str,
+            brightdata_credentials: Dict[str, str]
+    ):
+        proxy_username, proxy_password = brightdata_credentials["username"], brightdata_credentials["password"]
+        assert proxy_username is not None
+        assert proxy_password is not None
+
+        result = runner.invoke(
+            cmd_initial.main, [
+                "--bas_fingerprint_key", f"{fingerprint_key}",
+                "--count_profiles", "1",
+                "--proxy_provider", "brightdata",
+                "--proxy_username", proxy_username,
+                "--proxy_password", proxy_password
+            ]
+        )
+
+        assert result.exception is None
+        assert result.exit_code == 0

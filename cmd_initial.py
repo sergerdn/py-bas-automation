@@ -18,11 +18,11 @@ logger = logging.getLogger("[cmd_worker]")
 
 
 def run(
-        fingerprint_key: str,
-        count_profiles: int,
-        proxy_provider: str,
-        proxy_username: str,
-        proxy_password: str,
+    fingerprint_key: str,
+    count_profiles: int,
+    proxy_provider: str,
+    proxy_username: str,
+    proxy_password: str,
 ) -> FilePath:
     """
     Initialize and run the script.
@@ -102,7 +102,7 @@ def run(
     default=10,
 )
 def main(
-        bas_fingerprint_key: str, count_profiles: int, proxy_provider: str, proxy_username: str, proxy_password: str
+    bas_fingerprint_key: str, count_profiles: int, proxy_provider: str, proxy_username: str, proxy_password: str
 ) -> None:
     """
     Entry point of the script. Sets up logging, validates the fingerprint key,
