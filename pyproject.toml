@@ -50,6 +50,7 @@ pylint-pydantic = "^0.3.0"
 autopep8 = "^2.0.4"
 pydeps = "^1.12.17"
 commitizen = "^3.10.0"
+nest-asyncio = "^1.5.8"
 
 [tool.poetry.group.cmd.dependencies]
 click = "^8.1.7"

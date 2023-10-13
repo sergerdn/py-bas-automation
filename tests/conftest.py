@@ -5,12 +5,16 @@ from typing import Callable, Dict, Generator, Union
 from urllib.parse import parse_qs, urlencode, urlparse
 from zipfile import ZipFile
 
+import nest_asyncio  # type: ignore
 import pytest
 from _pytest.monkeypatch import MonkeyPatch
 from playwright.sync_api import BrowserContext, sync_playwright
 from pydantic import DirectoryPath
 
 from tests import FIXTURES_DIR, _find_free_port
+
+# Allow nested asyncio loops, https://stackoverflow.com/a/72453292
+nest_asyncio.apply()
 
 
 @pytest.fixture(scope="function", autouse=True)
@@ -69,6 +73,10 @@ def vcr_config() -> Dict[str, Callable]:
     def before_record_request(request):  # type: ignore
         url = request.uri
         parsed = urlparse(url)
+
+        # If the request is to localhost, do not record it
+        if parsed.hostname == "localhost" or parsed.hostname == "127.0.0.1":
+            return None
 
         parsed_qs = parse_qs(parsed.query)
         if parsed_qs.get("key", None):
