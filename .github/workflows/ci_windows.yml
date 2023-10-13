@@ -32,5 +32,7 @@ jobs:
         shell: bash
         env:
           FINGERPRINT_KEY: ${{ secrets.FINGERPRINT_KEY }}
+          BRIGHTDATA_USERNAME: ${{ secrets.BRIGHTDATA_USERNAME }}
+          BRIGHTDATA_PASSWORD: ${{ secrets.BRIGHTDATA_PASSWORD }}
         run: |
           poetry run pytest -vv --cov=pybas_automation --cov-report=html tests/

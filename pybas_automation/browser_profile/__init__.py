@@ -5,7 +5,7 @@ This module is responsible for managing browser profiles. It provides functional
 and load browser profiles. The profiles can be customized with different settings like fingerprints and proxies.
 """
 
-from .models import BrowserProfile, BrowserProfileProxy, BrowserProfileProxyEnum
+from .models import BrowserProfile
 from .storage import BrowserProfileStorage
 
-__all__ = ["BrowserProfile", "BrowserProfileProxy", "BrowserProfileProxyEnum", "BrowserProfileStorage"]
+__all__ = ["BrowserProfile", "BrowserProfileStorage"]

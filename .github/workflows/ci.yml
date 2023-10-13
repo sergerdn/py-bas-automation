@@ -30,6 +30,8 @@ jobs:
       - name: Lint with mypy and flake8
         env:
           FINGERPRINT_KEY: ${{ secrets.FINGERPRINT_KEY }}
+          BRIGHTDATA_USERNAME: ${{ secrets.BRIGHTDATA_USERNAME }}
+          BRIGHTDATA_PASSWORD: ${{ secrets.BRIGHTDATA_PASSWORD }}
         run: |
           mkdir ./dist && touch ./dist/README.md
           poetry run mypy pybas_automation/ tests/
@@ -52,6 +54,8 @@ jobs:
       - name: Run tests with pytest
         env:
           FINGERPRINT_KEY: ${{ secrets.FINGERPRINT_KEY }}
+          BRIGHTDATA_USERNAME: ${{ secrets.BRIGHTDATA_USERNAME }}
+          BRIGHTDATA_PASSWORD: ${{ secrets.BRIGHTDATA_PASSWORD }}
         run: |
           mkdir ./dist && touch ./dist/README.md
           poetry run pytest -vv --cov=pybas_automation --cov-report=html tests/

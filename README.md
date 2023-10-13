@@ -1,5 +1,7 @@
 # py-bas-automation
 
+[![Python CI](https://github.com/sergerdn/py-bas-automation/actions/workflows/ci.yml/badge.svg)](https://github.com/sergerdn/py-bas-automation/actions/workflows/ci.yml)
+
 **Note:** This project originally started as a `working proof of concept` and does not aim to offer extensive support or
 documentation. It serves as a fundamental demonstration of the concept and should be considered a foundation for further
 development or experimentation.
@@ -332,7 +334,7 @@ async with BrowserAutomator(remote_debugging_port=remote_debugging_port) as auto
 
 ## Planned Improvements:
 
-- [ ] Add Proxy support.
+- [x] Add Proxy support.
 - [ ] Include build scripts for converting Python files to executable format.
 - [ ] Expand the repository with more illustrative examples.
 - [ ] Develop end-to-end tests to thoroughly assess the entire workflow.

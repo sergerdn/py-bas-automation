@@ -62,11 +62,17 @@ tests_coverage:
 	@find . -type d -name __pycache__ -exec rm -rf {} \; || echo ""
 	start "" "./htmlcov/index.html"
 
-run_cmd_initial_cmd:
+run_cmd_initial:
 	@$(MAKE) clean
 	poetry run python cmd_initial.py --bas_fingerprint_key="${FINGERPRINT_KEY}" --count_profiles=1
 
-run_cmd_worker_cmd:
+run_cmd_initial_proxy:
+	@$(MAKE) clean
+	poetry run python cmd_initial.py --bas_fingerprint_key="${FINGERPRINT_KEY}" --count_profiles=1 \
+  --proxy_provider=brightdata --proxy_username="${BRIGHTDATA_USERNAME}" \
+  --proxy_password="${BRIGHTDATA_PASSWORD}"
+
+run_cmd_worker:
 	poetry run python cmd_worker.py
 
 publish:
