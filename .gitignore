@@ -13,3 +13,4 @@ bas_release/*
 /pybas_automation.svg
 /.mypy_cache/
 /.pytest_cache/
+/coverage/
