@@ -1,3 +1,14 @@
+## 0.1.7 (2023-10-13)
+
+### Feat
+
+- add browser-automator (#21)
+- add browser-automator
+
+### Fix
+
+- **makefile**: bump_version
+
 ## 0.1.6 (2023-10-11)
 
 ### Feat
