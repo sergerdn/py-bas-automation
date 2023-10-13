@@ -6,7 +6,7 @@ from typing import Union
 from pydantic import BaseModel, DirectoryPath, Field
 
 from pybas_automation import STORAGE_SUBDIR, default_model_config
-from pybas_automation.bas_actions.browser.proxy.models import BasActionBrowserProxy
+from pybas_automation.bas_actions.browser.proxy import BasActionBrowserProxy
 from pybas_automation.browser_profile.settings import _proxy_filename, _user_data_dir_default_factory
 
 
@@ -31,9 +31,9 @@ class BrowserProfile(BaseModel):
 
         bas_proxy = BasActionBrowserProxy(
             server=self.proxy.server,
-            port=f"{self.proxy.port}",  # type: ignore
-            is_http=False,  # type: ignore
-            name=self.proxy.name,
+            port=self.proxy.port,
+            type=self.proxy.type,
+            login=self.proxy.login,
             password=self.proxy.password,
         )
 
@@ -41,6 +41,6 @@ class BrowserProfile(BaseModel):
         sub_dir.mkdir(parents=True, exist_ok=True)
 
         proxy_filename = sub_dir.joinpath(_proxy_filename)
-        proxy_filename.open("w", encoding="utf-8").write(json.dumps(bas_proxy.model_dump(by_alias=True)))
+        proxy_filename.open("w", encoding="utf-8").write(json.dumps(bas_proxy.model_dump(mode="json")))
 
         return True

@@ -15,4 +15,4 @@ class TestBrightdata:
 
         bas_proxy_1 = proxy.to_bas_proxy(keep_session=False)
         assert bas_proxy_1 is not None
-        assert "-session-" not in bas_proxy_1.name  # type: ignore
+        assert "-session-" not in bas_proxy_1.login  # type: ignore
