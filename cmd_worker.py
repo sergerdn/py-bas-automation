@@ -14,10 +14,10 @@ from uuid import UUID
 
 import click
 from dotenv import load_dotenv
-from playwright.async_api import Locator, async_playwright
+from playwright.async_api import async_playwright
 
-from pybas_automation.browser_remote import BrowserRemote
-from pybas_automation.task import BasTask, TaskStorage, TaskStorageModeEnum
+from pybas_automation.browser_automator import BrowserAutomator
+from pybas_automation.task import TaskStorage, TaskStorageModeEnum
 
 # Load environment variables
 load_dotenv()
@@ -57,68 +57,21 @@ async def run(task_id: UUID, remote_debugging_port: int) -> None:
 
     # Debug: Print the task details
     print(json.dumps(found_task.model_dump(mode="json"), indent=4))
+    screenshot_filename = os.path.join(os.path.dirname(__file__), "reports", f"{found_task.task_id}_screenshot.png")
 
-    profile_folder_path = found_task.browser_settings.profile.profile_folder_path
-    remote_browser = BrowserRemote(remote_debugging_port=remote_debugging_port)
-    remote_browser.find_ws()
+    async with BrowserAutomator(remote_debugging_port=remote_debugging_port) as automator:
+        ws_endpoint = automator.get_ws_endpoint()
 
-    if not remote_browser.ws_endpoint:
-        raise ValueError(f"Unable to fetch websocket endpoint for profile: {profile_folder_path}")
+        async with async_playwright() as pw:
+            # Connect to an existing browser instance using the fetched WebSocket endpoint.
+            browser = await pw.chromium.connect_over_cdp(ws_endpoint)
+            # Access the main page of the connected browser instance.
+            page = browser.contexts[0].pages[0]
+            # Perform actions using Playwright, like navigating to a webpage.
+            await page.goto("https://playwright.dev/python/")
 
-    await work(remote_browser.ws_endpoint, found_task)
-
-
-async def work(ws_endpoint: str, task: BasTask) -> None:
-    """
-    Execute a Playwright script to capture a screenshot.
-
-    :param ws_endpoint: WebSocket endpoint used to connect to the browser.
-    :param task: Instance of the task to be processed.
-
-    :return: None.
-    """
-
-    async def simulate_click(elem: Locator) -> None:
-        """
-         Simulates mouse move and click on the provided element locator.
-
-        :param elem: Element locator.
-        """
-
-        # Get the bounding box of the element (i.e., its location and size)
-        bounding_box = await elem.bounding_box()
-        if not bounding_box:
-            raise ValueError(f"Unable to fetch bounding box for element: {elem}")
-
-        # Calculate the coordinates for the click (center of the element)
-        x = int(bounding_box["x"] + bounding_box["width"] / 2)
-        y = int(bounding_box["y"] + bounding_box["height"] / 2)
-
-        # Simulate the mouse move and click at the element's location
-        # Note: The mouse move is not required, but it is included for demonstration purposes
-        await elem.page.mouse.move(x, y)
-        await asyncio.sleep(1)
-
-        await elem.page.mouse.click(x, y)
-        await asyncio.sleep(1)
-
-    async with async_playwright() as pw:
-        browser = await pw.chromium.connect_over_cdp(ws_endpoint)
-        page = browser.contexts[0].pages[0]
-
-        # Navigate to the Playwright documentation and wait for it to load
-        await page.goto("https://playwright.dev/python/")
-        await asyncio.sleep(5)
-
-        # Find the element
-        h1_element = page.locator("xpath=//a[@class='getStarted_Sjon']")
-
-        # Use the simulate_click function
-        await simulate_click(h1_element)
-
-        # Save a screenshot of the current page
-        screenshot_filename = os.path.join(os.path.dirname(__file__), "reports", f"{task.task_id}_screenshot.png")
-        await page.screenshot(path=screenshot_filename, full_page=True)
+            # Save a screenshot of the current page
+            await automator.page.screenshot(path=screenshot_filename, full_page=True)
 
 
 @click.command()
