@@ -1,3 +1,10 @@
+## 0.1.8 (2023-10-13)
+
+### Feat
+
+- improve proxy support (#26)
+- add proxy support (#24)
+
 ## 0.1.7 (2023-10-13)
 
 ### Feat
