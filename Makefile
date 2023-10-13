@@ -85,7 +85,7 @@ bump_version:
 	echo "Current branch is '${GIT_BRANCH}'."
     ifeq ($(GIT_BRANCH),master)
 		cz bump --check-consistency --changelog --increment=patch
-	 else
+    else
 		@echo "Bump version is only allowed from the 'master' branch."
     endif
 
