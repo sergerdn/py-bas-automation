@@ -14,7 +14,7 @@ from fastapi.encoders import jsonable_encoder
 from pydantic import DirectoryPath
 
 from pybas_automation import STORAGE_SUBDIR
-from pybas_automation.bas_actions.browser.proxy.models import BasActionBrowserProxy
+from pybas_automation.bas_actions.browser.proxy import BasActionBrowserProxy
 from pybas_automation.browser_profile.models import BrowserProfile
 from pybas_automation.browser_profile.settings import (_filelock_filename, _fingerprint_raw_filename, _proxy_filename,
                                                        _storage_dir)

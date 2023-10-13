@@ -7,7 +7,7 @@ import pytest
 from _pytest.monkeypatch import MonkeyPatch
 from pydantic import DirectoryPath, FilePath
 
-from pybas_automation.bas_actions.browser.proxy.models import BasActionBrowserProxy
+from pybas_automation.bas_actions.browser.proxy import BasActionBrowserProxy, BasActionBrowserProxyTypeEnum
 from pybas_automation.browser_profile import BrowserProfileStorage
 from pybas_automation.browser_profile.models import BrowserProfile
 from pybas_automation.task import BasTask, TaskDuplicateError, TaskStorage, TaskStorageModeEnum
@@ -24,9 +24,9 @@ def create_task(profiles_dir: DirectoryPath, fingerprint_str: str, with_proxy: b
     if with_proxy:
         proxy = BasActionBrowserProxy(
             server="127.0.0.1",
-            port="9999",  # type: ignore
-            is_http=False,  # type: ignore
-            name="user",
+            port=9999,
+            type=BasActionBrowserProxyTypeEnum.HTTP,
+            login="user",
             password="pass",
         )
         browser_profile.proxy = proxy

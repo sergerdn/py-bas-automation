@@ -28,4 +28,10 @@ def timing(f):  # type: ignore
 
 
 def random_string(length: int = 10) -> str:
+    """
+    Generate a random string.
+
+    :param length: The length of the string.
+    """
+
     return "".join(random.choices(string.ascii_lowercase + string.digits, k=length))

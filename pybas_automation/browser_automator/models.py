@@ -11,4 +11,6 @@ WebsocketUrl = Annotated[Url, UrlConstraints(allowed_schemes=["ws"])]
 
 
 class WsUrlModel(BaseModel):
+    """WsUrlModel is a model for a WebSocket URL."""
+
     ws_url: WebsocketUrl

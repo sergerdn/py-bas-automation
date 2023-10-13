@@ -5,7 +5,7 @@ from typing import Generator
 import pycountry  # type: ignore
 import pytest
 
-from pybas_automation.bas_actions.browser.proxy.models import BasActionBrowserProxy
+from pybas_automation.bas_actions.browser.proxy import BasActionBrowserProxy, BasActionBrowserProxyTypeEnum
 from pybas_automation.browser_profile.proxy import get_external_info_ip
 
 countries = [c.alpha_2 for c in pycountry.countries]
@@ -48,9 +48,9 @@ class TestBrowserProfileProxy:
     def test_proxy(self) -> None:
         proxy = BasActionBrowserProxy(
             server="127.0.0.1",
-            port="9999",  # type: ignore
-            is_http=False,  # type: ignore
-            name="test_user",
+            port=9999,
+            type=BasActionBrowserProxyTypeEnum.SOCKS5,
+            login="test_user",
             password="test_pass",
         )
 

@@ -3,7 +3,7 @@ import os
 
 import pytest
 
-from pybas_automation.bas_actions.browser.proxy.models import BasActionBrowserProxy
+from pybas_automation.bas_actions.browser.proxy import BasActionBrowserProxy, BasActionBrowserProxyTypeEnum
 from pybas_automation.browser_profile import BrowserProfile, BrowserProfileStorage
 from pybas_automation.fingerprint import BasFingerprintRequest, get_fingerprint
 
@@ -29,9 +29,9 @@ class TestBrowserProfile:
         browser_profile = BrowserProfile()
         proxy = BasActionBrowserProxy(
             server="127.0.0.1",
-            port="9999",  # type: ignore
-            is_http=False,  # type: ignore
-            name="user",
+            port=9999,
+            type=BasActionBrowserProxyTypeEnum.HTTP,
+            login="user",
             password="pass",
         )
 
@@ -52,9 +52,9 @@ class TestBrowserProfile:
 
         proxy = BasActionBrowserProxy(
             server="127.0.0.1",
-            port="31000",  # type: ignore
-            is_http=False,  # type: ignore
-            name="user",
+            port=31000,
+            type=BasActionBrowserProxyTypeEnum.HTTP,
+            login="user",
             password="pass",
         )
 
