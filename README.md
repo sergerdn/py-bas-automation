@@ -82,8 +82,8 @@ This is an example of the created `tasks_file`:
       "proxy": {
         "server": "brd.superproxy.io",
         "port": "22225",
-        "is_http": false,
-        "name": "brd-customer-hl___redacted__",
+        "type": "http",
+        "login": "brd-customer-hl___redacted__",
         "password": "__redacted__"
       },
       "fingerprint": {
