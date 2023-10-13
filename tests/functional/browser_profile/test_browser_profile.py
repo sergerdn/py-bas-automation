@@ -3,8 +3,8 @@ import os
 
 import pytest
 
-from pybas_automation.browser_profile import (BrowserProfile, BrowserProfileProxy, BrowserProfileProxyEnum,
-                                              BrowserProfileStorage)
+from pybas_automation.bas_actions.browser.proxy.models import BasActionBrowserProxy
+from pybas_automation.browser_profile import BrowserProfile, BrowserProfileStorage
 from pybas_automation.fingerprint import BasFingerprintRequest, get_fingerprint
 
 
@@ -27,9 +27,14 @@ class TestBrowserProfile:
 
     def test_save_proxy(self) -> None:
         browser_profile = BrowserProfile()
-        proxy = BrowserProfileProxy(
-            hostname="127.0.0.1", port=3128, type=BrowserProfileProxyEnum.SOCKS5, login="user", password="pass"
+        proxy = BasActionBrowserProxy(
+            server="127.0.0.1",
+            port="9999",  # type: ignore
+            is_http=False,  # type: ignore
+            name="user",
+            password="pass",
         )
+
         browser_profile.proxy = proxy
         result = browser_profile.save_proxy_to_profile()
         assert result is True
@@ -45,8 +50,12 @@ class TestBrowserProfile:
         browser_profile = BrowserProfile(fingerprint_raw=fingerprint_raw)
         assert browser_profile.profile_dir is not None
 
-        proxy = BrowserProfileProxy(
-            hostname="127.0.0.1", port=3100, type=BrowserProfileProxyEnum.SOCKS5, login="user", password="pass"
+        proxy = BasActionBrowserProxy(
+            server="127.0.0.1",
+            port="31000",  # type: ignore
+            is_http=False,  # type: ignore
+            name="user",
+            password="pass",
         )
 
         browser_profile.proxy = proxy

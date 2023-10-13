@@ -7,6 +7,7 @@ from typing import Literal, Set, Union
 from uuid import UUID
 
 import filelock
+from fastapi.encoders import jsonable_encoder
 from pydantic import DirectoryPath, FilePath
 
 from pybas_automation.task.models import BasTask
@@ -139,7 +140,7 @@ class TaskStorage:
             self._tasks.append(task)
             self._tasks_unique_id.add(task.task_id)
 
-            _tasks = [t.model_dump(mode="json") for t in self._tasks]
+            _tasks = jsonable_encoder(self._tasks)
 
             with self.task_file_path.open(mode="w", encoding="utf-8") as f:
                 json.dump(_tasks, f, indent=4)

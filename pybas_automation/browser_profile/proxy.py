@@ -4,28 +4,25 @@ from typing import Dict
 
 import httpx
 
-from pybas_automation.browser_profile.models import BrowserProfileProxy
+from pybas_automation.bas_actions.browser.proxy.models import BasActionBrowserProxy
 
 
 class ExternalIPRequestException(Exception):
     """Raised when an error occurs while requesting the external IP address."""
 
 
-def get_external_info_ip(profile_proxy: BrowserProfileProxy) -> Dict:
+def get_external_info_ip(bas_proxy: BasActionBrowserProxy) -> Dict:
     """Get the external IP address."""
 
-    proxy_str = f"{profile_proxy.hostname}:{profile_proxy.port}"
+    proxy_str = f"{bas_proxy.server}:{bas_proxy.port}"
 
-    if profile_proxy.login and profile_proxy.password:
-        proxy_str = f"{profile_proxy.login}:{profile_proxy.password}@{proxy_str}"
+    if bas_proxy.name and bas_proxy.password:
+        proxy_str = f"{bas_proxy.name}:{bas_proxy.password}@{proxy_str}"
+    if bas_proxy.is_http:
+        proxies = f"http://{proxy_str}"
+    else:
+        proxies = f"socks5://{proxy_str}"
 
-    match profile_proxy.type:
-        case "socks5":
-            proxies = f"socks5://{proxy_str}"
-        case "http":
-            proxies = f"http://{proxy_str}"
-        case _:
-            raise ValueError(f"Invalid proxy type: {profile_proxy.type}")
     try:
         response = httpx.get(url="https://lumtest.com/myip.json", proxies=proxies, timeout=10)
     except Exception as exc:
