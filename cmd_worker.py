@@ -26,12 +26,13 @@ logger = logging.getLogger("[cmd_worker]")
 _debug = os.environ.get("DEBUG", "False").lower() == "true"
 
 
-async def run(task_id: UUID, remote_debugging_port: int) -> None:
+async def run(task_id: UUID, remote_debugging_port: int, unique_process_id: str) -> None:
     """
     Fetch the specified task and run the associated worker.
 
     :param task_id: Unique identifier of the desired task.
     :param remote_debugging_port: Port used for Chrome DevTools Protocol (CDP) remote debugging.
+    :param unique_process_id: A unique identifier for the `Worker.exe` process. Retrieved from the command line.
 
     :return: None.
     """
@@ -62,6 +63,14 @@ async def run(task_id: UUID, remote_debugging_port: int) -> None:
     async with BrowserAutomator(remote_debugging_port=remote_debugging_port) as automator:
         ws_endpoint = automator.get_ws_endpoint()
 
+        if unique_process_id:
+            # Here is an example of how to call an internal function from Python code in BrowserAutomationStudio.
+            logger.info("Unique process ID: %s", unique_process_id)
+            # _BAS_HIDE(BrowserAutomationStudio_GetPageContent)();
+            code = f"location.reload['_bas_hide_{unique_process_id}']['BrowserAutomationStudio_GetPageContent']()"
+            page_content = await automator.page.evaluate(code)
+            logger.debug("Page content from BAS api: %s ...", page_content[:100])
+
         async with async_playwright() as pw:
             # Connect to an existing browser instance using the fetched WebSocket endpoint.
             browser = await pw.chromium.connect_over_cdp(ws_endpoint)
@@ -82,17 +91,25 @@ async def run(task_id: UUID, remote_debugging_port: int) -> None:
     type=int,
     required=True,
 )
+@click.option("--unique_process_id", help="Unique identifier of the Worker.exe process.")
 @click.option(
     "--debug",
     help="Enable debug mode.",
     is_flag=True,
 )
-def main(task_id: UUID, remote_debugging_port: int, debug: bool) -> None:
+def main(
+    task_id: UUID,
+    remote_debugging_port: int,
+    unique_process_id: str,
+    debug: bool,
+) -> None:
     """
     Set up logging and initiate the task execution process.
 
-    :param task_id: Unique identifier of the task.
-    :param remote_debugging_port: Port used for CDP remote debugging.
+    :param task_id: Unique identifier of the task. :param remote_debugging_port: Port used for CDP remote debugging.
+    :param remote_debugging_port: Port used for Chrome DevTools Protocol (CDP) remote debugging.
+    :param unique_process_id: A unique identifier for the `Worker.exe` process. Retrieved from the command line
+    argument `--unique-process-id`.
     :param debug: Enable debug mode.
 
     :return: None.
@@ -122,7 +139,7 @@ def main(task_id: UUID, remote_debugging_port: int, debug: bool) -> None:
 
     logger.info("Initializing cmd_worker with PID: %s", process.pid)
 
-    asyncio.run(run(task_id=task_id, remote_debugging_port=remote_debugging_port))
+    asyncio.run(run(task_id=task_id, remote_debugging_port=remote_debugging_port, unique_process_id=unique_process_id))
 
 
 if __name__ == "__main__":
