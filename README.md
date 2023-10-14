@@ -1,6 +1,7 @@
 # py-bas-automation
 
 [![Python CI](https://github.com/sergerdn/py-bas-automation/actions/workflows/ci.yml/badge.svg)](https://github.com/sergerdn/py-bas-automation/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/sergerdn/py-bas-automation/graph/badge.svg?token=YQYHYG9VVM)](https://codecov.io/gh/sergerdn/py-bas-automation)
 
 **Note:** This project originally started as a `working proof of concept` and does not aim to offer extensive support or
 documentation. It serves as a fundamental demonstration of the concept and should be considered a foundation for further
@@ -22,6 +23,9 @@ customizable Windows GUI program, while controlling it with Python ❤️.
   **paid** service.
 - **Proxy Support:** The application supports proxy providers such as [Brightdata](https://brightdata.com/). Please
   note that this is a **paid** service.
+- **Executing Browser Automation Studio (BAS) Actions from Python**: Implement BAS actions from Python using the
+  un-documented API. This includes actions such as retrieving page source, emulating mouse movements, etc. (Note: Not
+  all functions are currently supported).
 - **Playwright Control:** The application leverages [Playwright](https://playwright.dev/python/) to efficiently manage
   and control BAS.
 
@@ -309,37 +313,55 @@ This script demonstrates how to execute tasks using the `Playwright` Python libr
 - **Task Storage**: Fetch a specific task from our task storage.
 - **Remote Browser Connection**: Use the remote debugging port to get a WebSocket endpoint, which allows us to connect
   to an existing browser instance.
-- **Playwright Actions**: Utilize Playwright to interact with a web page.
+- **Executing Browser Automation Studio (BAS) Actions from Python**: Implement BAS actions from Python using the
+  un-documented API. This includes actions such as retrieving page source, emulating mouse movements, etc. (Note: Not
+  all functions are currently supported).
 
 ```python
+import asyncio
 from uuid import UUID
 from playwright.sync_api import sync_playwright
-from pybas_automation.task import BasTask, TaskStorage, TaskStorageModeEnum
+from pybas_automation.task import TaskStorage, TaskStorageModeEnum
 from pybas_automation.browser_automator import BrowserAutomator
 
-# 1. Initialization
-# For demonstration purposes, we're using hardcoded values. In a real scenario, these will be fetched dynamically.
-task_id = UUID("some_task_id_that_we_getting_from_cmd_line_from_BAS")
-remote_debugging_port = 9222
 
-# 2. Task Storage
-# Create a new task storage instance in READ mode to fetch tasks.
-task_storage = TaskStorage(mode=TaskStorageModeEnum.READ)
-found_task = task_storage.get(task_id=task_id)
-# Note: You can manipulate or inspect the `found_task` as needed.
+async def main():
+    # 1. Initialization
+    # For demonstration purposes, we're using hardcoded values. In a real scenario, these will be fetched dynamically.
+    task_id = UUID("some_task_id_that_we_getting_from_cmd_line_from_BAS")
+    remote_debugging_port = 9222
+    # A unique identifier for the `Worker.exe` process. Retrieved from the command line  argument `--unique-process-id`.
+    unique_process_id = "some_unique_process_id"
 
-# 3. Remote Browser Connection
-async with BrowserAutomator(remote_debugging_port=remote_debugging_port) as automator:
-    ws_endpoint = automator.get_ws_endpoint()
+    # 2. Task Storage
+    # Create a new task storage instance in READ mode to fetch tasks.
+    task_storage = TaskStorage(mode=TaskStorageModeEnum.READ)
+    found_task = task_storage.get(task_id=task_id)
+    # Note: You can manipulate or inspect the `found_task` as needed.
 
-    # 4. Playwright Actions
-    with sync_playwright() as pw:
-        # Connect to an existing browser instance using the fetched WebSocket endpoint.
-        browser = pw.chromium.connect_over_cdp(ws_endpoint)
-        # Access the main page of the connected browser instance.
-        page = browser.contexts[0].pages[0]
-        # Perform actions using Playwright, like navigating to a webpage.
-        page.goto("https://playwright.dev/python/")
+    # 3. Remote Browser Connection
+    async with BrowserAutomator(remote_debugging_port=remote_debugging_port) as automator:
+        ws_endpoint = automator.get_ws_endpoint()
+        if unique_process_id:
+            # Here is an example of how to call an internal function from Python code in BrowserAutomationStudio.
+            print("Unique process ID: %s", unique_process_id)
+            # _BAS_HIDE(BrowserAutomationStudio_GetPageContent)();
+            code = f"location.reload['_bas_hide_{unique_process_id}']['BrowserAutomationStudio_GetPageContent']()"
+            page_content = await automator.page.evaluate(code)
+            print("Page content from BAS api: %s ...", page_content[:100])
+
+        # 4. Playwright Actions
+        with sync_playwright() as pw:
+            # Connect to an existing browser instance using the fetched WebSocket endpoint.
+            browser = pw.chromium.connect_over_cdp(ws_endpoint)
+            # Access the main page of the connected browser instance.
+            page = browser.contexts[0].pages[0]
+            # Perform actions using Playwright, like navigating to a webpage.
+            page.goto("https://playwright.dev/python/")
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
 ```
 
 ## Planned Improvements:

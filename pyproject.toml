@@ -84,6 +84,9 @@ max-line-length = 120
 #[tool.poetry.scripts]
 #build-readme = "python scripts/update_readme_links.py"
 
+#[tool.pytest]
+#addopts = "--cov=pybas_automation --cov-report html"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"

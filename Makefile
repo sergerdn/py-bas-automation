@@ -15,7 +15,7 @@ clean:
 	@touch ./logs/.gitkeep && git add ./logs/.gitkeep
 	@rm ./reports/* || echo ""
 	@touch ./reports/.gitkeep && git add ./reports/.gitkeep
-	@rm -rf ./htmlcov/* || echo ""
+	@rm -rf ./coverage || echo ""
 	@rm .coverage || echo ""
 	$(MAKE) clean_pycache
 	rm -rf ./dist || echo ""
@@ -58,9 +58,8 @@ tests:
 	$(MAKE) clean_pycache
 
 tests_coverage:
-	poetry run pytest -vv --cov=pybas_automation --cov-report=html tests/
-	@find . -type d -name __pycache__ -exec rm -rf {} \; || echo ""
-	start "" "./htmlcov/index.html"
+	poetry run pytest -vv --cov=pybas_automation --cov-report=html:coverage/html/functional/ tests/
+	start "" "./coverage/html/functional/index.html"
 
 run_cmd_initial:
 	@$(MAKE) clean
