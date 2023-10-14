@@ -1,6 +1,7 @@
 # py-bas-automation
 
 [![Python CI](https://github.com/sergerdn/py-bas-automation/actions/workflows/ci.yml/badge.svg)](https://github.com/sergerdn/py-bas-automation/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/sergerdn/py-bas-automation/graph/badge.svg?token=YQYHYG9VVM)](https://codecov.io/gh/sergerdn/py-bas-automation)
 
 **Note:** This project originally started as a `working proof of concept` and does not aim to offer extensive support or
 documentation. It serves as a fundamental demonstration of the concept and should be considered a foundation for further

@@ -15,7 +15,7 @@ clean:
 	@touch ./logs/.gitkeep && git add ./logs/.gitkeep
 	@rm ./reports/* || echo ""
 	@touch ./reports/.gitkeep && git add ./reports/.gitkeep
-	@rm -rf ./coverage/* || echo ""
+	@rm -rf ./coverage || echo ""
 	@rm .coverage || echo ""
 	$(MAKE) clean_pycache
 	rm -rf ./dist || echo ""
