@@ -36,7 +36,7 @@ jobs:
           BRIGHTDATA_PASSWORD: ${{ secrets.BRIGHTDATA_PASSWORD }}
         run: |
           mkdir -p ./coverage/lcov/functional
-          poetry run pytest -vv --cov=pybas_automation --cov-report=lcov:coverage/lcov/functional/coverage.lcov tests/
+          poetry run pytest -vv --cov=pybas_automation --cov-report=lcov:coverage/lcov/functional/coverage.lcov tests/functional
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v3
