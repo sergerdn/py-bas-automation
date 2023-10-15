@@ -155,17 +155,26 @@ Please note that this is not currently recommended as the latest release may hav
 
 ## How to Run the Application
 
-1. **Download the BAS Program:** Start by downloading the latest version of the compiled BAS program, named
-   _PyBasFree.zip_. This can be found under the [Releases](https://github.com/sergerdn/py-bas-automation/releases)
-   section on the GitHub page. Once downloaded, extract the contents and run _PyBasFree.exe_.
-   ![Releases section](docs/images/releases_1.png)
+- **Download the BAS Program:** Start by downloading the latest version of the compiled BAS program, named
+  _PyBasFree.zip_. This can be found under the [Releases](https://github.com/sergerdn/py-bas-automation/releases)
+  section on the GitHub page. Once downloaded, extract the contents and run _PyBasFree.exe_.
 
-2. **Set Variables in the BAS GUI:** After running the BAS program, proceed to set the necessary variables within the
-   BAS graphical user interface (GUI).
-   ![BAS GUI](docs/images/bas_gui_window_1.png)
+  ![Releases section](docs/images/releases_1.png)
 
-3. **Start the Program:** Once all variables have been set, click the "OK" button to initiate the program.
-   ![Start Program](docs/images/bas_gui_window_2.png)
+- **Set Variables in the BAS GUI:** After running the BAS program, proceed to set the necessary variables within the
+  BAS graphical user interface (GUI).
+
+  ![BAS GUI](docs/images/bas_gui_window_1.png)
+
+- **Set Up Proxy Provider:**  If you are using a proxy provider, you will need to configure it within the BAS GUI. This
+  can be accomplished by navigating to the `Proxy Settings` option in the vertical menu and selecting the appropriate
+  provider.
+
+  ![Set up proxy provider](docs/images/bas_gui_window_1_proxy.png)
+
+- **Start the Program:** Once all variables have been set, click the "OK" button to initiate the program.
+
+  ![Start Program](docs/images/bas_gui_window_2.png)
 
 ## Advanced Usage
 
