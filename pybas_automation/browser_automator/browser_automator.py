@@ -1,6 +1,10 @@
 """
-This module contains the BrowserAutomator class, which facilitates connections to browsers
-using the Chrome Developer Protocol (CDP).
+This module provides:
+
+1. The `BrowserAutomator` class, simplifying web automation via the Chrome Developer Protocol (CDP).
+
+2. Integration with the BAS_SAFE internal API for secure management of functions and properties within
+   the BAS_SAFE environment, ensuring reliable execution of critical operations such as simulating mouse movements.
 """
 
 import json
@@ -59,10 +63,15 @@ def _url_to_ws_endpoint(endpoint_url: str) -> str:
 
 class BrowserAutomator:
     """
-    Connects and interacts with a browser via the Chrome Developer Protocol (CDP).
+    A Python class for simplifying web automation by connecting to and interacting with web browsers
+    through the Chrome Developer Protocol (CDP).
 
-    This class provides higher-level functionalities built on top of the basic CDP
-    commands, making it easier to automate browser actions and retrieve information.
+    This class provides a user-friendly and streamlined interface built on top of the core CDP commands,
+    making it easier to automate browser actions and extract information from web pages.
+
+    Additionally, it seamlessly integrates with the BAS_SAFE internal API, enhancing security and reliability
+    within the BAS_SAFE environment. This integration extends to various actions, such as retrieving page source,
+    simulating mouse movements, and more (Note: Not all functions are currently supported).
     """
 
     ws_endpoint: WsUrlModel
@@ -75,9 +84,15 @@ class BrowserAutomator:
     page: Page
     cdp_client: CDPClient
 
-    def __init__(self, remote_debugging_port: int):
+    unique_process_id: str
+    _javascript_code: str
+
+    def __init__(self, remote_debugging_port: int, unique_process_id: Union[str, None] = None):
         """Initialize BrowserAutomator with a given remote debugging port."""
         self.remote_debugging_port = int(remote_debugging_port)
+        if unique_process_id:
+            self.unique_process_id = unique_process_id
+            self._javascript_code = f"location.reload['_bas_hide_{unique_process_id}']"
 
     def get_ws_endpoint(self) -> str:
         """
@@ -153,3 +168,37 @@ class BrowserAutomator:
 
         logger.debug("Successfully connected to browser: %s", self.browser)
         return self
+
+    async def _bas_safe_call(self, page: Page, javascript_func_code: str) -> Any:
+        """
+        Call a JavaScript function in the BAS _SAFE internal API.
+
+        :param page: The current page.
+        :param javascript_func_code: The JavaScript function code to execute.
+
+        :raises ValueError: If the self.unique_process_id is not set.
+
+        :return: The result of the JavaScript function call.
+        """
+
+        if not self.unique_process_id:
+            raise ValueError("You should set self.unique_process_id to use BAS_SAFE API")
+
+        return await page.evaluate(javascript_func_code)
+
+    async def bas_get_page_content(self, page: Union[Page, None] = None) -> Any:
+        """
+        Get the current page content.
+
+        :param page: The current page.
+
+        :raises ValueError: If the self.unique_process_id is not set.
+
+        :return: The current page content.
+        """
+
+        if page is None:
+            page = self.page
+
+        javascript_func_code = f"{self._javascript_code}['BrowserAutomationStudio_GetPageContent']()"
+        return await self._bas_safe_call(page=page, javascript_func_code=javascript_func_code)
