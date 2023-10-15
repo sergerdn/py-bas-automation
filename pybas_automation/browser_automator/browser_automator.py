@@ -1,13 +1,17 @@
 """
-This module contains the BrowserAutomator class, which facilitates connections to browsers
-using the Chrome Developer Protocol (CDP).
+This module provides:
+
+1. The `BrowserAutomator` class, simplifying web automation via the Chrome Developer Protocol (CDP).
+
+2. Integration with the BAS_SAFE internal API for secure management of functions and properties within
+   the BAS_SAFE environment, ensuring reliable execution of critical operations such as simulating mouse movements.
 """
 
 import json
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Tuple, Union
 
 import httpx
-from playwright.async_api import Browser, BrowserContext, Page
+from playwright.async_api import Browser, BrowserContext, Locator, Page
 from playwright.async_api import Playwright as AsyncPlaywright
 from playwright.async_api import async_playwright
 
@@ -57,12 +61,37 @@ def _url_to_ws_endpoint(endpoint_url: str) -> str:
     return str(json_data["webSocketDebuggerUrl"])
 
 
+async def _elem_coordinates(elem: Locator) -> Tuple[int, int]:
+    """
+    Get the coordinates of the given element.
+    :param elem: The element to get the coordinates for.
+
+    :raises ValueError: If unable to fetch bounding box for the given element.
+
+    :return: The coordinates of the given element.
+    """
+
+    bounding_box = await elem.bounding_box()
+    if not bounding_box:
+        raise ValueError(f"Unable to fetch bounding box for element: {elem}")
+
+    # Calculate the coordinates for the click (center of the element)
+    x = int(bounding_box["x"] + bounding_box["width"] / 2)
+    y = int(bounding_box["y"] + bounding_box["height"] / 2)
+    return x, y
+
+
 class BrowserAutomator:
     """
-    Connects and interacts with a browser via the Chrome Developer Protocol (CDP).
+    A Python class for simplifying web automation by connecting to and interacting with web browsers
+    through the Chrome Developer Protocol (CDP).
 
-    This class provides higher-level functionalities built on top of the basic CDP
-    commands, making it easier to automate browser actions and retrieve information.
+    This class provides a user-friendly and streamlined interface built on top of the core CDP commands,
+    making it easier to automate browser actions and extract information from web pages.
+
+    Additionally, it seamlessly integrates with the BAS_SAFE internal API, enhancing security and reliability
+    within the BAS_SAFE environment. This integration extends to various actions, such as retrieving page source,
+    simulating mouse movements, and more (Note: Not all functions are currently supported).
     """
 
     ws_endpoint: WsUrlModel
@@ -75,9 +104,15 @@ class BrowserAutomator:
     page: Page
     cdp_client: CDPClient
 
-    def __init__(self, remote_debugging_port: int):
+    unique_process_id: str
+    _javascript_code: str
+
+    def __init__(self, remote_debugging_port: int, unique_process_id: Union[str, None] = None):
         """Initialize BrowserAutomator with a given remote debugging port."""
         self.remote_debugging_port = int(remote_debugging_port)
+        if unique_process_id:
+            self.unique_process_id = unique_process_id
+            self._javascript_code = f"location.reload['_bas_hide_{unique_process_id}']"
 
     def get_ws_endpoint(self) -> str:
         """
@@ -153,3 +188,75 @@ class BrowserAutomator:
 
         logger.debug("Successfully connected to browser: %s", self.browser)
         return self
+
+    async def _bas_safe_call(self, page: Page, javascript_func_code: str) -> Any:
+        """
+        Call a JavaScript function in the BAS _SAFE internal API.
+
+        :param page: The current page.
+        :param javascript_func_code: The JavaScript function code to execute.
+
+        :raises ValueError: If the self.unique_process_id is not set.
+
+        :return: The result of the JavaScript function call.
+        """
+
+        if not self.unique_process_id:
+            raise ValueError("You should set self.unique_process_id to use BAS_SAFE API")
+
+        return await page.evaluate(javascript_func_code)
+
+    async def bas_get_page_content(self, page: Union[Page, None] = None) -> Any:
+        """
+        Get the current page content.
+
+        :param page: The current page.
+
+        :raises ValueError: If the self.unique_process_id is not set.
+
+        :return: The current page content.
+        """
+
+        if page is None:
+            page = self.page
+
+        javascript_func_code = f"{self._javascript_code}['BrowserAutomationStudio_GetPageContent']()"
+        return await self._bas_safe_call(page=page, javascript_func_code=javascript_func_code)
+
+    async def bas_scroll_mouse_to_coordinates(self, x: int, y: int, page: Union[Page, None] = None) -> Any:
+        """
+        Click on the given coordinates.
+
+        :param x: The x coordinate.
+        :param y: The y coordinate.
+        :param page: The current page.
+
+        :raises ValueError: If the self.unique_process_id is not set.
+        """
+
+        if page is None:
+            page = self.page
+
+        javascript_func_code = f"{self._javascript_code}['BrowserAutomationStudio_ScrollToCoordinates']({x},{y},true)"
+        return await self._bas_safe_call(page=page, javascript_func_code=javascript_func_code)
+
+    async def bas_move_mouse_to_elem(self, elem: Locator, page: Union[Page, None] = None) -> Any:
+        """
+        Move the mouse to the given element.
+
+        :param elem: The element to move the mouse to.
+        :param page: The current page.
+
+        :raises ValueError: If the self.unique_process_id is not set.
+
+        :return: The result of the JavaScript function call.
+        """
+
+        if page is None:
+            page = self.page
+
+        x, y = await _elem_coordinates(elem=elem)
+
+        result = await self.bas_scroll_mouse_to_coordinates(x=x, y=y, page=page)
+        logger.debug("Scrolled to coordinates: %s", result)
+        return result
