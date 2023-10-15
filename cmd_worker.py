@@ -60,17 +60,19 @@ async def run(task_id: UUID, remote_debugging_port: int, unique_process_id: str)
     print(json.dumps(found_task.model_dump(mode="json"), indent=4))
     screenshot_filename = os.path.join(os.path.dirname(__file__), "reports", f"{found_task.task_id}_screenshot.png")
 
-    async with BrowserAutomator(remote_debugging_port=remote_debugging_port) as automator:
-        ws_endpoint = automator.get_ws_endpoint()
-
+    async with BrowserAutomator(
+        remote_debugging_port=remote_debugging_port, unique_process_id=unique_process_id
+    ) as automator:
+        # Variant 1: Work with the BrowserAutomator API
+        await automator.page.goto("https://playwright.dev/python/")
         if unique_process_id:
-            # Here is an example of how to call an internal function from Python code in BrowserAutomationStudio.
+            # With Automator, you can call function from the BrowserAutomationStudio API.
             logger.info("Unique process ID: %s", unique_process_id)
-            # _BAS_HIDE(BrowserAutomationStudio_GetPageContent)();
-            code = f"location.reload['_bas_hide_{unique_process_id}']['BrowserAutomationStudio_GetPageContent']()"
-            page_content = await automator.page.evaluate(code)
-            logger.debug("Page content from BAS api: %s ...", page_content[:100])
+            page_content = await automator.bas_get_page_content()
+            logger.debug("Page content from BAS_SAFE api: %s ...", page_content[:100])
 
+        # Variant 1: Work with the Playwright API directly.
+        ws_endpoint = automator.get_ws_endpoint()
         async with async_playwright() as pw:
             # Connect to an existing browser instance using the fetched WebSocket endpoint.
             browser = await pw.chromium.connect_over_cdp(ws_endpoint)
