@@ -1,3 +1,10 @@
+## 0.1.10 (2023-10-15)
+
+### Feat
+
+- improve support of BAS_SAFE (#35)
+- add initial support of BAS_SAFE (#34)
+
 ## 0.1.9 (2023-10-14)
 
 ### Feat
