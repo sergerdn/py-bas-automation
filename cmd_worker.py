@@ -69,6 +69,11 @@ async def run(task_id: UUID, remote_debugging_port: int, unique_process_id: str)
             # With Automator, you can call function from the BrowserAutomationStudio API.
             logger.info("Unique process ID: %s", unique_process_id)
             page_content = await automator.bas_get_page_content()
+
+            elem = automator.page.locator("xpath=//a[@class='getStarted_Sjon']")
+            await automator.bas_move_mouse_to_elem(elem=elem)
+            await elem.click()
+
             logger.debug("Page content from BAS_SAFE api: %s ...", page_content[:100])
 
         # Variant 1: Work with the Playwright API directly.
