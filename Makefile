@@ -58,8 +58,12 @@ tests:
 	$(MAKE) clean_pycache
 
 tests_coverage:
-	poetry run pytest -vv --cov=pybas_automation --cov-report=html:coverage/html/functional/ tests/
-	start "" "./coverage/html/functional/index.html"
+	poetry run pytest -vv --cov=pybas_automation --cov-report=html:coverage/html tests
+	start "" "./coverage/html/index.html"
+
+tests_coverage_e2e:
+	poetry run pytest -vv --cov=pybas_automation --cov-report=html:coverage/html/ tests/e2e
+	start "" "./coverage/html/index.html"
 
 run_cmd_initial:
 	@$(MAKE) clean
