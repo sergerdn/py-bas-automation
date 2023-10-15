@@ -8,10 +8,10 @@ This module provides:
 """
 
 import json
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Tuple, Union
 
 import httpx
-from playwright.async_api import Browser, BrowserContext, Page
+from playwright.async_api import Browser, BrowserContext, Locator, Page
 from playwright.async_api import Playwright as AsyncPlaywright
 from playwright.async_api import async_playwright
 
@@ -59,6 +59,26 @@ def _url_to_ws_endpoint(endpoint_url: str) -> str:
     logger.debug("WebSocket preparation response: %s", json_data)
 
     return str(json_data["webSocketDebuggerUrl"])
+
+
+async def _elem_coordinates(elem: Locator) -> Tuple[int, int]:
+    """
+    Get the coordinates of the given element.
+    :param elem: The element to get the coordinates for.
+
+    :raises ValueError: If unable to fetch bounding box for the given element.
+
+    :return: The coordinates of the given element.
+    """
+
+    bounding_box = await elem.bounding_box()
+    if not bounding_box:
+        raise ValueError(f"Unable to fetch bounding box for element: {elem}")
+
+    # Calculate the coordinates for the click (center of the element)
+    x = int(bounding_box["x"] + bounding_box["width"] / 2)
+    y = int(bounding_box["y"] + bounding_box["height"] / 2)
+    return x, y
 
 
 class BrowserAutomator:
@@ -202,3 +222,41 @@ class BrowserAutomator:
 
         javascript_func_code = f"{self._javascript_code}['BrowserAutomationStudio_GetPageContent']()"
         return await self._bas_safe_call(page=page, javascript_func_code=javascript_func_code)
+
+    async def bas_scroll_mouse_to_coordinates(self, x: int, y: int, page: Union[Page, None] = None) -> Any:
+        """
+        Click on the given coordinates.
+
+        :param x: The x coordinate.
+        :param y: The y coordinate.
+        :param page: The current page.
+
+        :raises ValueError: If the self.unique_process_id is not set.
+        """
+
+        if page is None:
+            page = self.page
+
+        javascript_func_code = f"{self._javascript_code}['BrowserAutomationStudio_ScrollToCoordinates']({x},{y},true)"
+        return await self._bas_safe_call(page=page, javascript_func_code=javascript_func_code)
+
+    async def bas_move_mouse_to_elem(self, elem: Locator, page: Union[Page, None] = None) -> Any:
+        """
+        Move the mouse to the given element.
+
+        :param elem: The element to move the mouse to.
+        :param page: The current page.
+
+        :raises ValueError: If the self.unique_process_id is not set.
+
+        :return: The result of the JavaScript function call.
+        """
+
+        if page is None:
+            page = self.page
+
+        x, y = await _elem_coordinates(elem=elem)
+
+        result = await self.bas_scroll_mouse_to_coordinates(x=x, y=y, page=page)
+        logger.debug("Scrolled to coordinates: %s", result)
+        return result

@@ -329,7 +329,7 @@ This script demonstrates how to execute tasks using the `Playwright` Python libr
 ```python
 import asyncio
 from uuid import UUID
-from playwright.sync_api import sync_playwright
+from playwright.async_api import async_playwright
 from pybas_automation.task import TaskStorage, TaskStorageModeEnum
 from pybas_automation.browser_automator import BrowserAutomator
 
@@ -349,24 +349,31 @@ async def main():
     # Note: You can manipulate or inspect the `found_task` as needed.
 
     # 3. Remote Browser Connection
-    async with BrowserAutomator(remote_debugging_port=remote_debugging_port) as automator:
-        ws_endpoint = automator.get_ws_endpoint()
+    async with BrowserAutomator(
+            remote_debugging_port=remote_debugging_port, unique_process_id=unique_process_id
+    ) as automator:
+        # Variant 1: Work with the BrowserAutomator API
+        await automator.page.goto("https://playwright.dev/python/")
         if unique_process_id:
-            # Here is an example of how to call an internal function from Python code in BrowserAutomationStudio.
+            # With Automator, you can call function from the BrowserAutomationStudio API.
             print("Unique process ID: %s", unique_process_id)
-            # _BAS_HIDE(BrowserAutomationStudio_GetPageContent)();
-            code = f"location.reload['_bas_hide_{unique_process_id}']['BrowserAutomationStudio_GetPageContent']()"
-            page_content = await automator.page.evaluate(code)
-            print("Page content from BAS api: %s ...", page_content[:100])
+            page_content = await automator.bas_get_page_content()
 
-        # 4. Playwright Actions
-        with sync_playwright() as pw:
+            elem = automator.page.locator("xpath=//a[@class='getStarted_Sjon']")
+            await automator.bas_move_mouse_to_elem(elem=elem)
+            await elem.click()
+
+            print("Page content from BAS_SAFE api: %s ...", page_content[:100])
+
+        # Variant 1: Work with the Playwright API directly.
+        ws_endpoint = automator.get_ws_endpoint()
+        async with async_playwright() as pw:
             # Connect to an existing browser instance using the fetched WebSocket endpoint.
-            browser = pw.chromium.connect_over_cdp(ws_endpoint)
+            browser = await pw.chromium.connect_over_cdp(ws_endpoint)
             # Access the main page of the connected browser instance.
             page = browser.contexts[0].pages[0]
             # Perform actions using Playwright, like navigating to a webpage.
-            page.goto("https://playwright.dev/python/")
+            await page.goto("https://playwright.dev/python/")
 
 
 if __name__ == "__main__":
