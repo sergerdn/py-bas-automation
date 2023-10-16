@@ -1,5 +1,4 @@
-name: Windows CI
-run-name: Windows CI
+name: Windows Python CI
 
 on:
   push:

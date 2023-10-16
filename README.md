@@ -1,7 +1,7 @@
 # py-bas-automation
 
-[![Python CI](https://github.com/sergerdn/py-bas-automation/actions/workflows/ci.yml/badge.svg)](https://github.com/sergerdn/py-bas-automation/actions/workflows/ci.yml)
-[![Windows CI](https://github.com/sergerdn/py-bas-automation/actions/workflows/ci_windows.yml/badge.svg)](https://github.com/sergerdn/py-bas-automation/actions/workflows/ci_windows.yml)
+[![Linux Python CI](https://github.com/sergerdn/py-bas-automation/actions/workflows/ci_linux.yml/badge.svg)](https://github.com/sergerdn/py-bas-automation/actions/workflows/ci.yml)
+[![Windows Python CI](https://github.com/sergerdn/py-bas-automation/actions/workflows/ci_windows.yml/badge.svg)](https://github.com/sergerdn/py-bas-automation/actions/workflows/ci_windows.yml)
 [![codecov](https://codecov.io/gh/sergerdn/py-bas-automation/graph/badge.svg?token=YQYHYG9VVM)](https://codecov.io/gh/sergerdn/py-bas-automation)
 
 **Note:** This project originally started as a `working proof of concept` and does not aim to offer extensive support or
