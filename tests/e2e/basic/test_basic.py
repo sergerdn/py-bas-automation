@@ -1,13 +1,12 @@
 import asyncio
 import os
-import platform
 
 import pytest
 from pywinauto import Application  # type: ignore
 
 from pybas_automation.browser_profile import BrowserProfileStorage
 from pybas_automation.task import TaskStorage, TaskStorageModeEnum
-
+from tests import is_windows
 
 # def is_ready_for_e2e() -> bool:
 #     task_id = os.environ.get("TEST_TASK_ID", None)
@@ -25,7 +24,7 @@ from pybas_automation.task import TaskStorage, TaskStorageModeEnum
 #     return True
 
 
-@pytest.mark.skipif(not platform.system().lower() == "windows", reason="requires Windows")
+@pytest.mark.skipif(not is_windows, reason="requires Windows")
 class TestBasic2e2:
     # @pytest.mark.skipif(not is_ready_for_e2e(), reason="requires setup 2e2 environment")
     # @pytest.mark.asyncio
