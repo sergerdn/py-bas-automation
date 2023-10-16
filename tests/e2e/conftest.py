@@ -1,9 +1,7 @@
 import asyncio
 import codecs
 import os
-import shutil
 import tempfile
-import time
 import zipfile
 from typing import AsyncGenerator
 
@@ -11,6 +9,7 @@ import pytest_asyncio
 from pywinauto import Application  # type: ignore
 
 from tests import ABS_PATH, FIXTURES_DIR
+from tests.e2e import clean_dir
 
 
 def generate_xml_config() -> str:
@@ -75,66 +74,65 @@ async def bas_app() -> AsyncGenerator[Application, None]:
     src = os.path.join(ABS_PATH, "bas_release", "PyBasFree.zip")
     assert os.path.exists(src)
     assert os.path.isfile(src)
-
     test_dir = tempfile.mkdtemp(prefix="pybas-e2e_test_")
     assert os.path.exists(test_dir)
 
-    with zipfile.ZipFile(src, "r") as zip_ref:
-        zip_ref.extractall(test_dir)
-
-    unpacked_dir = os.path.join(test_dir, "PyBasFree")
-    assert os.path.exists(unpacked_dir)
-    assert os.path.isdir(unpacked_dir)
-
-    print(unpacked_dir)
-    exe_filename = os.path.join(unpacked_dir, "PyBasFree.exe")
-
-    app = Application(backend="uia").start(exe_filename)
-
-    # wait for the app to download dependencies and detached from the console
-    while app.is_process_running():
-        await asyncio.sleep(5)
-
-    app = Application().connect(title="Language chooser", timeout=10)
-    await asyncio.sleep(5)
-    assert app.is_process_running() is True
-
-    app.window().wrapper_object().set_focus().type_keys("{ENTER}")
-    assert app.is_process_running() is True
-
-    await asyncio.sleep(5)
-    # closing the app
-    app.kill()
-    while app.is_process_running():
-        await asyncio.sleep(5)
-
-    created_dirs = os.listdir(os.path.join(unpacked_dir, "appsremote", "PyBasFree"))
-
-    # Get the first directory starting with 'SID'
-    matching_dir = next((x for x in created_dirs if x.startswith("SID")), None)
-    assert matching_dir is not None
-
-    xml_config_filename = os.path.join(
-        unpacked_dir, "appsremote", "PyBasFree", matching_dir, "engine", "Actual.PyBasFree.xml"
-    )
-
-    with codecs.open(xml_config_filename, "w", "utf-8") as f:
-        f.write(xml_config)
-
-    app = Application(backend="uia").start(exe_filename)
-
-    while app.is_process_running():
-        await asyncio.sleep(5)
-
-    app = Application().connect(title_re="^PyBasFree", timeout=10)
-    assert app.is_process_running() is True
-
     try:
-        yield app
-    finally:
+        with zipfile.ZipFile(src, "r") as zip_ref:
+            zip_ref.extractall(test_dir)
+
+        unpacked_dir = os.path.join(test_dir, "PyBasFree")
+        assert os.path.exists(unpacked_dir)
+        assert os.path.isdir(unpacked_dir)
+
+        print(unpacked_dir)
+        exe_filename = os.path.join(unpacked_dir, "PyBasFree.exe")
+
+        app = Application(backend="uia").start(exe_filename)
+
+        # wait for the app to download dependencies and detached from the console
+        while app.is_process_running():
+            await asyncio.sleep(5)
+
+        app = Application().connect(title="Language chooser", timeout=10)
+        await asyncio.sleep(5)
+        assert app.is_process_running() is True
+
+        app.window().wrapper_object().set_focus().type_keys("{ENTER}")
+        assert app.is_process_running() is True
+
+        await asyncio.sleep(5)
+        # closing the app
         app.kill()
         while app.is_process_running():
-            await asyncio.sleep(1)
+            await asyncio.sleep(5)
 
-        time.sleep(5)
-        shutil.rmtree(test_dir, ignore_errors=True)
+        created_dirs = os.listdir(os.path.join(unpacked_dir, "appsremote", "PyBasFree"))
+
+        # Get the first directory starting with 'SID'
+        matching_dir = next((x for x in created_dirs if x.startswith("SID")), None)
+        assert matching_dir is not None
+
+        xml_config_filename = os.path.join(
+            unpacked_dir, "appsremote", "PyBasFree", matching_dir, "engine", "Actual.PyBasFree.xml"
+        )
+
+        with codecs.open(xml_config_filename, "w", "utf-8") as f:
+            f.write(xml_config)
+
+        app = Application(backend="uia").start(exe_filename)
+
+        while app.is_process_running():
+            await asyncio.sleep(5)
+
+        app = Application().connect(title_re="^PyBasFree", timeout=10)
+        assert app.is_process_running() is True
+
+        try:
+            yield app
+        finally:
+            app.kill()
+            while app.is_process_running():
+                await asyncio.sleep(1)
+    finally:
+        await clean_dir(test_dir)
