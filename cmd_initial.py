@@ -18,17 +18,17 @@ logger = logging.getLogger("[cmd_worker]")
 
 
 def run(
-    fingerprint_key: str,
-    count_profiles: int,
-    proxy_provider: str,
-    proxy_username: str,
-    proxy_password: str,
+        fingerprint_key: str,
+        limit_tasks: int,
+        proxy_provider: str,
+        proxy_username: str,
+        proxy_password: str,
 ) -> FilePath:
     """
     Initialize and run the script.
 
     :param fingerprint_key: Personal fingerprint key from FingerprintSwitcher.
-    :param count_profiles: Number of profiles to be created.
+    :param limit_tasks: Number of tasks/profiles to be created.
     :param proxy_provider: Proxy provider to use.
     :param proxy_username: Proxy provider username.
     :param proxy_password: Proxy provider password.
@@ -54,7 +54,7 @@ def run(
     # The default profile storage location is C:\Users\{username}\AppData\Local\PyBASProfiles
     browser_profile_storage = BrowserProfileStorage(fingerprint_key=fingerprint_key)
 
-    needs = count_profiles - browser_profile_storage.count()
+    needs = limit_tasks - browser_profile_storage.count()
 
     # Create any additional profiles if necessary
     if needs > 0:
@@ -73,7 +73,7 @@ def run(
             logger.debug("Created new profile: %s", browser_profile.profile_dir)
 
     # Generate tasks corresponding to each profile
-    for browser_profile in browser_profile_storage.load_all()[:count_profiles]:
+    for browser_profile in browser_profile_storage.load_all()[:limit_tasks]:
         task = BasTask()
 
         task.browser_settings.profile.profile_folder_path = browser_profile.profile_dir
@@ -97,19 +97,19 @@ def run(
 @click.option("--proxy_username", help="Proxy provider username.", type=str, default="")
 @click.option("--proxy_password", help="Proxy provider password.", type=str, default="")
 @click.option(
-    "--count_profiles",
-    help="Number of profiles.",
+    "--limit_tasks",
+    help="Number of tasks/profiles.",
     default=10,
 )
 def main(
-    bas_fingerprint_key: str, count_profiles: int, proxy_provider: str, proxy_username: str, proxy_password: str
+        bas_fingerprint_key: str, limit_tasks: int, proxy_provider: str, proxy_username: str, proxy_password: str
 ) -> None:
     """
     Entry point of the script. Sets up logging, validates the fingerprint key,
     triggers the primary function, and prints the path to the tasks file.
 
     :param bas_fingerprint_key: Personal fingerprint key from FingerprintSwitcher.
-    :param count_profiles: Number of profiles to be created.
+    :param limit_tasks: Number of tasks/profiles to be created.
     :param proxy_provider: Proxy provider to use.
 
     :return: None.
@@ -136,7 +136,7 @@ def main(
     proxy_username = proxy_username.strip()
     proxy_password = proxy_password.strip()
 
-    logger.info("Proxy provider: %s, count_profiles: %d", proxy_provider, count_profiles)
+    logger.info("Proxy provider: %s, limit_tasks: %d", proxy_provider, limit_tasks)
 
     match proxy_provider:
         case "":
@@ -149,7 +149,7 @@ def main(
     # Invoke the main function to get the path to the tasks file
     task_file_path = run(
         fingerprint_key=bas_fingerprint_key,
-        count_profiles=count_profiles,
+        limit_tasks=limit_tasks,
         proxy_provider=proxy_provider,
         proxy_username=proxy_username,
         proxy_password=proxy_password,
