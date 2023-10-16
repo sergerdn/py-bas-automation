@@ -94,11 +94,12 @@ async def bas_app() -> AsyncGenerator[Application, None]:
         while app.is_process_running():
             await asyncio.sleep(5)
 
-        app = Application().connect(title="Language chooser", timeout=10)
+        app = Application(backend="uia").connect(title="Language chooser", timeout=10)
         await asyncio.sleep(5)
         assert app.is_process_running() is True
 
-        app.window().wrapper_object().set_focus().type_keys("{ENTER}")
+        btn_wrapper = app.window(title="OK Enter", top_level_only=False).wrapper_object()
+        btn_wrapper.click()
         assert app.is_process_running() is True
 
         await asyncio.sleep(5)
@@ -125,7 +126,7 @@ async def bas_app() -> AsyncGenerator[Application, None]:
         while app.is_process_running():
             await asyncio.sleep(5)
 
-        app = Application().connect(title_re="^PyBasFree", timeout=10)
+        app = Application(backend="uia").connect(title_re="^PyBasFree", timeout=10)
         assert app.is_process_running() is True
 
         try:

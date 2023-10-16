@@ -8,6 +8,7 @@ from pywinauto import Application  # type: ignore
 from pybas_automation.browser_profile import BrowserProfileStorage
 from pybas_automation.task import TaskStorage, TaskStorageModeEnum
 
+
 # def is_ready_for_e2e() -> bool:
 #     task_id = os.environ.get("TEST_TASK_ID", None)
 #     if not task_id:
@@ -55,10 +56,12 @@ class TestBasic2e2:
     @pytest.mark.asyncio
     async def test_basic_compiled_app_works(self, bas_app: Application, fingerprint_key: str) -> None:
         # run the app
-        bas_app.window().wrapper_object().set_focus().type_keys("{ENTER}")
+        bas_app.window(title="OK Enter", top_level_only=False).wrapper_object().click()
+
         await asyncio.sleep(5)
 
-        while len(bas_app.windows()) != 5:
+        # new window with result and stats should be opened
+        while len(bas_app.windows()) != 2:
             print("Waiting for the app to finished...")
             await asyncio.sleep(5)
 
