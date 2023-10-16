@@ -1,49 +1,84 @@
+import asyncio
 import os
+import platform
 
 import pytest
+from pywinauto import Application  # type: ignore
 
-from pybas_automation.browser_automator import BrowserAutomator
+from pybas_automation.browser_profile import BrowserProfileStorage
+from pybas_automation.task import TaskStorage, TaskStorageModeEnum
+
+# def is_ready_for_e2e() -> bool:
+#     task_id = os.environ.get("TEST_TASK_ID", None)
+#     if not task_id:
+#         return False
+#
+#     unique_process_id = os.environ.get("TEST_UNIQUE_PROCESS_ID", None)
+#     if not unique_process_id:
+#         return False
+#
+#     remote_debugging_port = os.environ.get("TEST_REMOTE_DEBUGGING_PORT", None)
+#     if not remote_debugging_port:
+#         return False
+#
+#     return True
 
 
-def is_ready_for_e2e() -> bool:
-    task_id = os.environ.get("TEST_TASK_ID", None)
-    if not task_id:
-        return False
-
-    unique_process_id = os.environ.get("TEST_UNIQUE_PROCESS_ID", None)
-    if not unique_process_id:
-        return False
-
-    remote_debugging_port = os.environ.get("TEST_REMOTE_DEBUGGING_PORT", None)
-    if not remote_debugging_port:
-        return False
-
-    return True
-
-
-@pytest.mark.skipif(not is_ready_for_e2e(), reason="requires setup 2e2 environment")
+@pytest.mark.skipif(not platform.system().lower() == "windows", reason="requires Windows")
 class TestBasic2e2:
+    # @pytest.mark.skipif(not is_ready_for_e2e(), reason="requires setup 2e2 environment")
+    # @pytest.mark.asyncio
+    # async def test_basic(self, task_id: str, unique_process_id: str, remote_debugging_port: int) -> None:
+    #     print(task_id, unique_process_id, remote_debugging_port)
+    #     async with BrowserAutomator(
+    #         remote_debugging_port=remote_debugging_port, unique_process_id=unique_process_id
+    #     ) as automator:
+    #         ws_endpoint = automator.get_ws_endpoint()
+    #
+    #         assert ws_endpoint is not None
+    #         assert ws_endpoint.startswith("ws://")
+    #
+    #         assert automator.browser_version is not None
+    #         assert automator.browser_version.startswith("Chrome/")
+    #         print(automator.browser_version)
+    #
+    #         await automator.page.goto("https://playwright.dev/python/")
+    #         elem = automator.page.locator("xpath=//a[@class='getStarted_Sjon']")
+    #         await automator.bas_move_mouse_to_elem(elem=elem)
+    #         await elem.click()
+    #
+    #         page_content = await automator.bas_get_page_content()
+    #
+    #         assert page_content is not None
+    #         assert "html" in page_content
+
     @pytest.mark.asyncio
-    async def test_basic(self, task_id: str, unique_process_id: str, remote_debugging_port: int) -> None:
-        print(task_id, unique_process_id, remote_debugging_port)
-        async with BrowserAutomator(
-            remote_debugging_port=remote_debugging_port, unique_process_id=unique_process_id
-        ) as automator:
-            ws_endpoint = automator.get_ws_endpoint()
+    async def test_basic_compiled_app_works(self, bas_app: Application, fingerprint_key: str) -> None:
+        # run the app
+        bas_app.window().wrapper_object().set_focus().type_keys("{ENTER}")
+        await asyncio.sleep(5)
 
-            assert ws_endpoint is not None
-            assert ws_endpoint.startswith("ws://")
+        while len(bas_app.windows()) != 5:
+            print("Waiting for the app to finished...")
+            await asyncio.sleep(5)
 
-            assert automator.browser_version is not None
-            assert automator.browser_version.startswith("Chrome/")
-            print(automator.browser_version)
+        print(os.environ["LOCALAPPDATA"])
 
-            await automator.page.goto("https://playwright.dev/python/")
-            elem = automator.page.locator("xpath=//a[@class='getStarted_Sjon']")
-            await automator.bas_move_mouse_to_elem(elem=elem)
-            await elem.click()
+        task_storage = TaskStorage(mode=TaskStorageModeEnum.READ_WRITE)
+        assert task_storage.load_all() is True
+        tasks = task_storage.get_all()
+        assert tasks is not None
+        assert len(tasks) == 1
 
-            page_content = await automator.bas_get_page_content()
+        browser_profile_storage = BrowserProfileStorage(fingerprint_key=fingerprint_key)
+        assert browser_profile_storage.count() == 1
+        profiles = browser_profile_storage.load_all()
+        profile = profiles[0]
 
-            assert page_content is not None
-            assert "html" in page_content
+        assert os.path.exists(profile.profile_dir)
+
+        # our dir exists
+        assert os.path.exists(os.path.join(profile.profile_dir, ".pybas")) is True
+        assert os.path.exists(os.path.join(profile.profile_dir, ".pybas", "fingerprint_raw.json")) is True
+        # Ensure browser started
+        assert os.path.exists(os.path.join(profile.profile_dir, "Default")) is True
