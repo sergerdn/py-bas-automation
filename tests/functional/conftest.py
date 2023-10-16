@@ -12,48 +12,51 @@ from pydantic import DirectoryPath
 
 from tests import FIXTURES_DIR, _find_free_port
 
-# Allow nested asyncio loops, https://stackoverflow.com/a/72453292
+# Patch asyncio to support nested asynchronous event loops.
 nest_asyncio.apply()
 
 
 @pytest.fixture(scope="module")
 def fingerprint_str() -> str:
-    fingerprint_str_zip = os.path.join(FIXTURES_DIR, "fingerprint_raw.zip")
-    assert os.path.exists(fingerprint_str_zip)
+    """
+    Retrieve fingerprint data from a zipped fixture.
 
-    with ZipFile(fingerprint_str_zip) as zf:
+    :return: Contents of fingerprint_raw.json from fingerprint_raw.zip.
+    """
+
+    fingerprint_zip_path = os.path.join(FIXTURES_DIR, "fingerprint_raw.zip")
+    assert os.path.exists(fingerprint_zip_path)
+
+    with ZipFile(fingerprint_zip_path) as zf:
         for file in zf.namelist():
-            if not file == "fingerprint_raw.json":
-                continue
+            if file == "fingerprint_raw.json":
+                with zf.open(file) as f:
+                    return f.read().decode("utf-8")
 
-            with zf.open(file) as f:
-                return f.read().decode("utf-8")
-
-    raise Exception("fingerprint_raw.json not found in fingerprint_raw.zip")
+    raise FileNotFoundError("fingerprint_raw.json not found in the zip file.")
 
 
 @pytest.fixture(scope="session")
 def vcr_config() -> Dict[str, Callable]:
+    """
+    Configure VCR to selectively record and replay HTTP requests for tests.
+
+    :return: VCR configuration dictionary.
+    """
+
     def before_record_response(response):  # type: ignore
-        if response["status_code"] != 200:
-            return
-        return response
+        return response if response["status_code"] == 200 else None
 
     def before_record_request(request):  # type: ignore
-        url = request.uri
-        parsed = urlparse(url)
+        if urlparse(request.uri).hostname in ["localhost", "127.0.0.1"]:
+            return None  # Skip localhost requests
 
-        # If the request is to localhost, do not record it
-        if parsed.hostname == "localhost" or parsed.hostname == "127.0.0.1":
-            return None
-
+        # Mask sensitive query params (like API keys) for recording.
+        parsed = urlparse(request.uri)
         parsed_qs = parse_qs(parsed.query)
-        if parsed_qs.get("key", None):
+        if "key" in parsed_qs:
             parsed_qs["key"] = ["dummy_key"]
-            qs = urlencode(parsed_qs, doseq=True)
-            url = parsed._replace(query=qs).geturl()
-
-        request.uri = url
+            request.uri = parsed._replace(query=urlencode(parsed_qs, doseq=True)).geturl()
 
         return request
 
@@ -62,30 +65,43 @@ def vcr_config() -> Dict[str, Callable]:
 
 @pytest.fixture(scope="session")
 def browser_profile_folder_path() -> Generator[DirectoryPath, None, None]:
-    dir_name = DirectoryPath(tempfile.mkdtemp(dir=tempfile.gettempdir()))
-    if not os.path.exists(dir_name):
-        os.mkdir(dir_name)
+    """
+    Provide a temporary directory for the browser profile.
 
-    yield DirectoryPath(dir_name)
+    :return: Path to the temporary directory.
+    """
 
-    shutil.rmtree(dir_name, ignore_errors=True)
+    temp_dir = DirectoryPath(tempfile.mkdtemp())
+    yield temp_dir
+    shutil.rmtree(temp_dir, ignore_errors=True)
 
 
 @pytest.fixture(scope="session")
 def free_port() -> int:
+    """
+    Fetch an available port on the host machine.
+
+    :return: Free port number.
+    """
+
     return _find_free_port()
 
 
 @pytest.fixture(scope="session")
 def browser_data() -> Generator[tuple[BrowserContext, DirectoryPath, int], None, None]:
-    user_data_dir = DirectoryPath(tempfile.mkdtemp(dir=tempfile.gettempdir()))
+    """
+    Initialize a browser with a given user data directory and remote debugging port.
+
+    :return: Tuple containing the BrowserContext, user data directory path, and remote debugging port.
+    """
+
+    user_data_dir = DirectoryPath(tempfile.mkdtemp())
     port = _find_free_port()
 
     with sync_playwright() as playwright:
         browser = playwright.chromium.launch_persistent_context(
             user_data_dir=user_data_dir,
             headless=True,
-            # viewport={"width": 1366, "height": 4768},
             args=[f"--remote-debugging-port={port}"],
         )
 
@@ -96,9 +112,15 @@ def browser_data() -> Generator[tuple[BrowserContext, DirectoryPath, int], None,
 
 @pytest.fixture(scope="module")
 def brightdata_credentials() -> Dict[str, str]:
-    username = os.environ.get("BRIGHTDATA_USERNAME", None)
-    password = os.environ.get("BRIGHTDATA_PASSWORD", None)
-    if username is None or password is None:
-        raise ValueError("BRIGHTDATA_USERNAME or BRIGHTDATA_PASSWORD not set")
+    """
+    Fetch Bright Data service credentials from environment variables.
+
+    :return: Dictionary containing username and password.
+    """
+
+    username = os.environ.get("BRIGHTDATA_USERNAME")
+    password = os.environ.get("BRIGHTDATA_PASSWORD")
+    if not username or not password:
+        raise ValueError("Both BRIGHTDATA_USERNAME and BRIGHTDATA_PASSWORD must be set.")
 
     return {"username": username, "password": password}
