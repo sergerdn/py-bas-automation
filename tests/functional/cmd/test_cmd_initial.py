@@ -15,9 +15,7 @@ class TestCmdInitial:
         yield CliRunner()
 
     def test_main(self, runner: CliRunner, fingerprint_key: str) -> None:
-        result = runner.invoke(
-            cmd_initial.main, ["--bas_fingerprint_key", f"{fingerprint_key}", "--limit_tasks", "1"]
-        )
+        result = runner.invoke(cmd_initial.main, ["--bas_fingerprint_key", f"{fingerprint_key}", "--limit_tasks", "1"])
 
         assert result.exit_code == 0
         assert result.exception is None

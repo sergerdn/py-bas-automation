@@ -1,188 +1,223 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <BrowserAutomationStudioProject>
-     <Script><![CDATA[]]></Script>
-     <ModuleInfo><![CDATA[]]></ModuleInfo>
-     <Modules/>
-     <EmbeddedData><![CDATA[]]></EmbeddedData>
-     <DatabaseId></DatabaseId>
-     <Schema></Schema>
-     <ConnectionIsRemote>false</ConnectionIsRemote>
-     <ConnectionServer></ConnectionServer>
-     <ConnectionPort></ConnectionPort>
-     <ConnectionLogin></ConnectionLogin>
-     <ConnectionPassword></ConnectionPassword>
-     <ScriptName></ScriptName>
-     <ProtectionStrength>4</ProtectionStrength>
-     <UnusedModules></UnusedModules>
-     <ScriptIcon></ScriptIcon>
-     <IsCustomIcon>false</IsCustomIcon>
-     <HideBrowsers>false</HideBrowsers>
-     <IntegrateScheduler>false</IntegrateScheduler>
-     <SingleInstance>false</SingleInstance>
-     <CopySilent>false</CopySilent>
-     <IsEnginesInAppData>false</IsEnginesInAppData>
-     <CompileType>NoProtection</CompileType>
-     <ScriptVersion></ScriptVersion>
-     <AvailableLanguages></AvailableLanguages>
-     <OutputTitle1 en=""/>
-     <OutputTitle2 en=""/>
-     <OutputTitle3 en=""/>
-     <OutputTitle4 en=""/>
-     <OutputTitle5 en=""/>
-     <OutputTitle6 en=""/>
-     <OutputTitle7 en=""/>
-     <OutputTitle8 en=""/>
-     <OutputTitle9 en=""/>
-     <OutputVisible1>1</OutputVisible1>
-     <OutputVisible2>1</OutputVisible2>
-     <OutputVisible3>1</OutputVisible3>
-     <OutputVisible4>1</OutputVisible4>
-     <OutputVisible5>1</OutputVisible5>
-     <OutputVisible6>1</OutputVisible6>
-     <OutputVisible7>0</OutputVisible7>
-     <OutputVisible8>0</OutputVisible8>
-     <OutputVisible9>1</OutputVisible9>
-     <ModelList>
-          <Model>
-               <Name>ProxyProvider</Name>
-               <Description en="ProxyProvider" ru="ProxyProvider"/>
-               <SectionName en="Proxy Settings" ru="Proxy Settings"/>
-               <VisibilityConditionValue></VisibilityConditionValue>
-               <VisibilityConditionVariable></VisibilityConditionVariable>
-               <Type>Select</Type>
-               <IsAdvanced>0</IsAdvanced>
-               <Visible>1</Visible>
-               <Enabled>1</Enabled>
-               <AllowedTypes>Select</AllowedTypes>
-               <Values>NoProxy
-Brightdata</Values>
-               <Selected>1</Selected>
-               <SelectType>1</SelectType>
-          </Model>
-          <Defaults/>
-          <Model>
-               <Name>ProxyUsername</Name>
-               <Description en="ProxyUsername" ru="ProxyUsername"/>
-               <SectionName en="Proxy Settings" ru="Proxy Settings"/>
-               <VisibilityConditionValue>Brightdata</VisibilityConditionValue>
-               <VisibilityConditionVariable>ProxyProvider</VisibilityConditionVariable>
-               <Type>FixedString</Type>
-               <IsAdvanced>0</IsAdvanced>
-               <Visible>1</Visible>
-               <Enabled>1</Enabled>
-               <AllowedTypes>FixedString</AllowedTypes>
-               <Value>{{BRIGHTDATA_USERNAME}}</Value>
-               <NotEmpty>1</NotEmpty>
-          </Model>
-          <Defaults/>
-          <Model>
-               <Name>ProxyPassword</Name>
-               <Description en="ProxyPassword" ru="ProxyPassword"/>
-               <SectionName en="Proxy Settings" ru="Proxy Settings"/>
-               <VisibilityConditionValue>Brightdata</VisibilityConditionValue>
-               <VisibilityConditionVariable>ProxyProvider</VisibilityConditionVariable>
-               <Type>FixedString</Type>
-               <IsAdvanced>0</IsAdvanced>
-               <Visible>1</Visible>
-               <Enabled>1</Enabled>
-               <AllowedTypes>FixedString</AllowedTypes>
-               <Value>{{BRIGHTDATA_PASSWORD}}</Value>
-               <NotEmpty>1</NotEmpty>
-          </Model>
-          <Defaults/>
-          <Model>
-               <Name>PythonRunCommands</Name>
-               <Description en="PythonRunCommands" ru="PythonRunCommands"/>
-               <SectionName en="Script Settings" ru="Script Settings"/>
-               <VisibilityConditionValue></VisibilityConditionValue>
-               <VisibilityConditionVariable></VisibilityConditionVariable>
-               <Type>FixedString</Type>
-               <IsAdvanced>0</IsAdvanced>
-               <Visible>1</Visible>
-               <Enabled>1</Enabled>
-               <AllowedTypes>FixedString</AllowedTypes>
-               <Value>{{PYTHON_RUN_COMMANDS}}</Value>
-               <NotEmpty>1</NotEmpty>
-          </Model>
-          <Defaults/>
-          <Model>
-               <Name>PythonInitialScriptPath</Name>
-               <Description en="PythonInitialScriptPath" ru="PythonInitialScriptPath"/>
-               <SectionName en="Script Settings" ru="Script Settings"/>
-               <VisibilityConditionValue></VisibilityConditionValue>
-               <VisibilityConditionVariable></VisibilityConditionVariable>
-               <Type>LinesFromFile</Type>
-               <IsAdvanced>0</IsAdvanced>
-               <Visible>1</Visible>
-               <Enabled>1</Enabled>
-               <AllowedTypes>LinesFromFile</AllowedTypes>
-               <Filename>{{CMD_INITIAL}}</Filename>
-               <Clean>0</Clean>
-               <Read>1</Read>
-               <Mix>0</Mix>
-               <MaxSuccess>1</MaxSuccess>
-               <MaxFail>1</MaxFail>
-               <MaxSimultaneous>1</MaxSimultaneous>
-               <Interval>5000</Interval>
-               <ReloadInterval>0</ReloadInterval>
-               <RenewInterval>-1</RenewInterval>
-               <Greedy>0</Greedy>
-          </Model>
-          <Defaults/>
-          <Model>
-               <Name>PythonWorkerScriptPath</Name>
-               <Description en="PythonWorkerScriptPath" ru="PythonWorkerScriptPath"/>
-               <SectionName en="Script Settings" ru="Script Settings"/>
-               <VisibilityConditionValue></VisibilityConditionValue>
-               <VisibilityConditionVariable></VisibilityConditionVariable>
-               <Type>LinesFromFile</Type>
-               <IsAdvanced>0</IsAdvanced>
-               <Visible>1</Visible>
-               <Enabled>1</Enabled>
-               <AllowedTypes>LinesFromFile</AllowedTypes>
-               <Filename>{{CMD_WORKER}}</Filename>
-               <Clean>0</Clean>
-               <Read>1</Read>
-               <Mix>0</Mix>
-               <MaxSuccess>1</MaxSuccess>
-               <MaxFail>1</MaxFail>
-               <MaxSimultaneous>1</MaxSimultaneous>
-               <Interval>5000</Interval>
-               <ReloadInterval>0</ReloadInterval>
-               <RenewInterval>-1</RenewInterval>
-               <Greedy>0</Greedy>
-          </Model>
-          <Defaults/>
-          <Model>
-               <Name>Threads</Name>
-               <Description en="Threads" ru="Threads"/>
-               <SectionName en="Script Settings" ru="Script Settings"/>
-               <VisibilityConditionValue></VisibilityConditionValue>
-               <VisibilityConditionVariable></VisibilityConditionVariable>
-               <Type>FixedInteger</Type>
-               <IsAdvanced>0</IsAdvanced>
-               <Visible>1</Visible>
-               <Enabled>1</Enabled>
-               <AllowedTypes>FixedInteger</AllowedTypes>
-               <Value>1</Value>
-               <MinValue>-99999999</MinValue>
-               <MaxValue>99999999</MaxValue>
-          </Model>
-          <Defaults/>
-          <Model>
-               <Name>FINGERPRINT_KEY</Name>
-               <Description en="FINGERPRINT_KEY" ru="FINGERPRINT_KEY"/>
-               <SectionName en="Script Settings" ru="Script Settings"/>
-               <VisibilityConditionValue></VisibilityConditionValue>
-               <VisibilityConditionVariable></VisibilityConditionVariable>
-               <Type>FixedString</Type>
-               <IsAdvanced>0</IsAdvanced>
-               <Visible>1</Visible>
-               <Enabled>1</Enabled>
-               <AllowedTypes>FixedString</AllowedTypes>
-               <Value>{{FINGERPRINT_KEY}}</Value>
-               <NotEmpty>1</NotEmpty>
-          </Model>
-          <Defaults/>
-     </ModelList>
+    <Script><![CDATA[]]></Script>
+    <ModuleInfo><![CDATA[]]></ModuleInfo>
+    <Modules/>
+    <EmbeddedData><![CDATA[]]></EmbeddedData>
+    <DatabaseId></DatabaseId>
+    <Schema></Schema>
+    <ConnectionIsRemote>false</ConnectionIsRemote>
+    <ConnectionServer></ConnectionServer>
+    <ConnectionPort></ConnectionPort>
+    <ConnectionLogin></ConnectionLogin>
+    <ConnectionPassword></ConnectionPassword>
+    <ScriptName></ScriptName>
+    <ProtectionStrength>4</ProtectionStrength>
+    <UnusedModules></UnusedModules>
+    <ScriptIcon></ScriptIcon>
+    <IsCustomIcon>false</IsCustomIcon>
+    <HideBrowsers>false</HideBrowsers>
+    <IntegrateScheduler>false</IntegrateScheduler>
+    <SingleInstance>false</SingleInstance>
+    <CopySilent>false</CopySilent>
+    <IsEnginesInAppData>false</IsEnginesInAppData>
+    <CompileType>NoProtection</CompileType>
+    <ScriptVersion></ScriptVersion>
+    <AvailableLanguages></AvailableLanguages>
+    <OutputTitle1 en=""/>
+    <OutputTitle2 en=""/>
+    <OutputTitle3 en=""/>
+    <OutputTitle4 en=""/>
+    <OutputTitle5 en=""/>
+    <OutputTitle6 en=""/>
+    <OutputTitle7 en=""/>
+    <OutputTitle8 en=""/>
+    <OutputTitle9 en=""/>
+    <OutputVisible1>1</OutputVisible1>
+    <OutputVisible2>1</OutputVisible2>
+    <OutputVisible3>1</OutputVisible3>
+    <OutputVisible4>1</OutputVisible4>
+    <OutputVisible5>1</OutputVisible5>
+    <OutputVisible6>1</OutputVisible6>
+    <OutputVisible7>0</OutputVisible7>
+    <OutputVisible8>0</OutputVisible8>
+    <OutputVisible9>1</OutputVisible9>
+    <ModelList>
+        <Model>
+            <Name>ProxyProvider</Name>
+            <Description ru="ProxyProvider" en="ProxyProvider"/>
+            <SectionName ru="Proxy Settings" en="Proxy Settings"/>
+            <VisibilityConditionValue></VisibilityConditionValue>
+            <VisibilityConditionVariable></VisibilityConditionVariable>
+            <Type>Select</Type>
+            <IsAdvanced>0</IsAdvanced>
+            <Visible>1</Visible>
+            <Enabled>1</Enabled>
+            <AllowedTypes>Select</AllowedTypes>
+            <Values>NoProxy
+                Brightdata
+            </Values>
+            <Selected>1</Selected>
+            <SelectType>1</SelectType>
+        </Model>
+        <Defaults/>
+        <Model>
+            <Name>ProxyUsername</Name>
+            <Description ru="ProxyUsername" en="ProxyUsername"/>
+            <SectionName ru="Proxy Settings" en="Proxy Settings"/>
+            <VisibilityConditionValue>Brightdata</VisibilityConditionValue>
+            <VisibilityConditionVariable>ProxyProvider</VisibilityConditionVariable>
+            <Type>FixedString</Type>
+            <IsAdvanced>0</IsAdvanced>
+            <Visible>1</Visible>
+            <Enabled>1</Enabled>
+            <AllowedTypes>FixedString</AllowedTypes>
+            <Value>{{BRIGHTDATA_USERNAME}}</Value>
+            <NotEmpty>1</NotEmpty>
+        </Model>
+        <Defaults/>
+        <Model>
+            <Name>ProxyPassword</Name>
+            <Description ru="ProxyPassword" en="ProxyPassword"/>
+            <SectionName ru="Proxy Settings" en="Proxy Settings"/>
+            <VisibilityConditionValue>Brightdata</VisibilityConditionValue>
+            <VisibilityConditionVariable>ProxyProvider</VisibilityConditionVariable>
+            <Type>FixedString</Type>
+            <IsAdvanced>0</IsAdvanced>
+            <Visible>1</Visible>
+            <Enabled>1</Enabled>
+            <AllowedTypes>FixedString</AllowedTypes>
+            <Value>{{BRIGHTDATA_PASSWORD}}</Value>
+            <NotEmpty>1</NotEmpty>
+        </Model>
+        <Defaults/>
+        <Model>
+            <Name>PythonRunCommands</Name>
+            <Description ru="PythonRunCommands" en="PythonRunCommands"/>
+            <SectionName ru="Script Settings" en="Script Settings"/>
+            <VisibilityConditionValue></VisibilityConditionValue>
+            <VisibilityConditionVariable></VisibilityConditionVariable>
+            <Type>FixedString</Type>
+            <IsAdvanced>0</IsAdvanced>
+            <Visible>1</Visible>
+            <Enabled>1</Enabled>
+            <AllowedTypes>FixedString</AllowedTypes>
+            <Value>{{PYTHON_RUN_COMMANDS}}</Value>
+            <NotEmpty>1</NotEmpty>
+        </Model>
+        <Defaults/>
+        <Model>
+            <Name>PythonInitialScriptPath</Name>
+            <Description ru="PythonInitialScriptPath" en="PythonInitialScriptPath"/>
+            <SectionName ru="Script Settings" en="Script Settings"/>
+            <VisibilityConditionValue></VisibilityConditionValue>
+            <VisibilityConditionVariable></VisibilityConditionVariable>
+            <Type>LinesFromFile</Type>
+            <IsAdvanced>0</IsAdvanced>
+            <Visible>1</Visible>
+            <Enabled>1</Enabled>
+            <AllowedTypes>LinesFromFile</AllowedTypes>
+            <Filename>{{CMD_INITIAL}}</Filename>
+            <Clean>0</Clean>
+            <Read>1</Read>
+            <Mix>0</Mix>
+            <MaxSuccess>1</MaxSuccess>
+            <MaxFail>1</MaxFail>
+            <MaxSimultaneous>1</MaxSimultaneous>
+            <Interval>5000</Interval>
+            <ReloadInterval>0</ReloadInterval>
+            <RenewInterval>-1</RenewInterval>
+            <Greedy>0</Greedy>
+        </Model>
+        <Defaults/>
+        <Model>
+            <Name>PythonWorkerScriptPath</Name>
+            <Description ru="PythonWorkerScriptPath" en="PythonWorkerScriptPath"/>
+            <SectionName ru="Script Settings" en="Script Settings"/>
+            <VisibilityConditionValue></VisibilityConditionValue>
+            <VisibilityConditionVariable></VisibilityConditionVariable>
+            <Type>LinesFromFile</Type>
+            <IsAdvanced>0</IsAdvanced>
+            <Visible>1</Visible>
+            <Enabled>1</Enabled>
+            <AllowedTypes>LinesFromFile</AllowedTypes>
+            <Filename>{{CMD_WORKER}}</Filename>
+            <Clean>0</Clean>
+            <Read>1</Read>
+            <Mix>0</Mix>
+            <MaxSuccess>1</MaxSuccess>
+            <MaxFail>1</MaxFail>
+            <MaxSimultaneous>1</MaxSimultaneous>
+            <Interval>5000</Interval>
+            <ReloadInterval>0</ReloadInterval>
+            <RenewInterval>-1</RenewInterval>
+            <Greedy>0</Greedy>
+        </Model>
+        <Defaults/>
+        <Model>
+            <Name>LimitTasks</Name>
+            <Description ru="LimitTasks" en="LimitTasks"/>
+            <SectionName ru="Script Settings" en="Script Settings"/>
+            <VisibilityConditionValue></VisibilityConditionValue>
+            <VisibilityConditionVariable></VisibilityConditionVariable>
+            <Type>FixedInteger</Type>
+            <IsAdvanced>0</IsAdvanced>
+            <Visible>1</Visible>
+            <Enabled>1</Enabled>
+            <AllowedTypes>FixedInteger</AllowedTypes>
+            <Value>{{LIMIT_TASKS}}</Value>
+            <MinValue>-99999999</MinValue>
+            <MaxValue>99999999</MaxValue>
+        </Model>
+        <Defaults/>
+        <Model>
+            <Name>Threads</Name>
+            <Description ru="Threads" en="Threads"/>
+            <SectionName ru="Script Settings" en="Script Settings"/>
+            <VisibilityConditionValue></VisibilityConditionValue>
+            <VisibilityConditionVariable></VisibilityConditionVariable>
+            <Type>FixedInteger</Type>
+            <IsAdvanced>0</IsAdvanced>
+            <Visible>1</Visible>
+            <Enabled>1</Enabled>
+            <AllowedTypes>FixedInteger</AllowedTypes>
+            <Value>{{THREADS}}</Value>
+            <MinValue>-99999999</MinValue>
+            <MaxValue>99999999</MaxValue>
+        </Model>
+        <Defaults/>
+        <Model>
+            <Name>FINGERPRINT_KEY</Name>
+            <Description ru="FINGERPRINT_KEY" en="FINGERPRINT KEY"/>
+            <SectionName ru="Script Settings" en="Script Settings"/>
+            <VisibilityConditionValue></VisibilityConditionValue>
+            <VisibilityConditionVariable></VisibilityConditionVariable>
+            <Type>FixedString</Type>
+            <IsAdvanced>0</IsAdvanced>
+            <Visible>1</Visible>
+            <Enabled>1</Enabled>
+            <AllowedTypes>FixedString</AllowedTypes>
+            <Value>{{FINGERPRINT_KEY}}</Value>
+            <NotEmpty>1</NotEmpty>
+        </Model>
+        <Defaults/>
+        <Model>
+            <Name>DEBUG</Name>
+            <Description ru="DEBUG" en="DEBUG"/>
+            <SectionName ru="Script Settings" en="Script Settings"/>
+            <VisibilityConditionValue></VisibilityConditionValue>
+            <VisibilityConditionVariable></VisibilityConditionVariable>
+            <Type>Select</Type>
+            <IsAdvanced>0</IsAdvanced>
+            <Visible>1</Visible>
+            <Enabled>1</Enabled>
+            <AllowedTypes>Select</AllowedTypes>
+            <Values>false
+                true
+            </Values>
+            <Selected>1</Selected>
+            <SelectType>1</SelectType>
+        </Model>
+        <Defaults/>
+    </ModelList>
 </BrowserAutomationStudioProject>

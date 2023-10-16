@@ -1,7 +1,7 @@
 import os
 import shutil
 import tempfile
-from typing import Callable, Dict, Generator, Union
+from typing import Callable, Dict, Generator
 from urllib.parse import parse_qs, urlencode, urlparse
 from zipfile import ZipFile
 
@@ -14,15 +14,6 @@ from tests import FIXTURES_DIR, _find_free_port
 
 # Allow nested asyncio loops, https://stackoverflow.com/a/72453292
 nest_asyncio.apply()
-
-
-@pytest.fixture(scope="module")
-def fingerprint_key() -> Union[str, None]:
-    fingerprint_key = os.environ.get("FINGERPRINT_KEY", None)
-    if not fingerprint_key:
-        raise ValueError("FINGERPRINT_KEY not set")
-
-    return fingerprint_key
 
 
 @pytest.fixture(scope="module")
