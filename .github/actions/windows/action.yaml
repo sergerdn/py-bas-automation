@@ -1,30 +1,12 @@
 name: 'Setup Python and Poetry.'
 description: 'Set up Python, install Poetry, cache dependencies, and install them with Poetry.'
 
-inputs:
-  python-version:
-    description: 'Version of Python to use.'
-    required: true
-    default: '3.11'
-
 runs:
   using: 'composite'
   steps:
     - name: Checkout LFS objects
       shell: bash
       run: git lfs checkout
-
-    - name: Set up Python ${{ inputs.python-version }}
-      uses: actions/setup-python@v4
-      with:
-        python-version: ${{ inputs.python-version }}
-
-    - name: Install Poetry
-      uses: snok/install-poetry@v1
-      with:
-        virtualenvs-create: true
-        virtualenvs-in-project: true
-        installer-parallel: true
 
     - name: Cache python dependencies
       uses: actions/cache@v3
