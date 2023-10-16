@@ -67,11 +67,11 @@ tests_coverage_e2e:
 
 run_cmd_initial:
 	@$(MAKE) clean
-	poetry run python cmd_initial.py --bas_fingerprint_key="${FINGERPRINT_KEY}" --count_profiles=1
+	poetry run python cmd_initial.py --bas_fingerprint_key="${FINGERPRINT_KEY}" --limit_tasks=1
 
 run_cmd_initial_proxy:
 	@$(MAKE) clean
-	poetry run python cmd_initial.py --bas_fingerprint_key="${FINGERPRINT_KEY}" --count_profiles=1 \
+	poetry run python cmd_initial.py --bas_fingerprint_key="${FINGERPRINT_KEY}" --limit_tasks=1 \
   --proxy_provider=brightdata --proxy_username="${BRIGHTDATA_USERNAME}" \
   --proxy_password="${BRIGHTDATA_PASSWORD}"
 

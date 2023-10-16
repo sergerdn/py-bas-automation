@@ -16,7 +16,7 @@ class TestCmdInitial:
 
     def test_main(self, runner: CliRunner, fingerprint_key: str) -> None:
         result = runner.invoke(
-            cmd_initial.main, ["--bas_fingerprint_key", f"{fingerprint_key}", "--count_profiles", "1"]
+            cmd_initial.main, ["--bas_fingerprint_key", f"{fingerprint_key}", "--limit_tasks", "1"]
         )
 
         assert result.exit_code == 0
@@ -38,7 +38,7 @@ class TestCmdInitial:
             [
                 "--bas_fingerprint_key",
                 f"{fingerprint_key}",
-                "--count_profiles",
+                "--limit_tasks",
                 "1",
                 "--proxy_provider",
                 "brightdata",

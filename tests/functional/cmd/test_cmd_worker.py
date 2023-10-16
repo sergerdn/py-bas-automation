@@ -13,7 +13,7 @@ import cmd_worker
 
 
 def create_tasks(runner: CliRunner, fingerprint_key: str) -> str:
-    result = runner.invoke(cmd_initial.main, ["--bas_fingerprint_key", f"{fingerprint_key}", "--count_profiles", "1"])
+    result = runner.invoke(cmd_initial.main, ["--bas_fingerprint_key", f"{fingerprint_key}", "--limit_tasks", "1"])
 
     assert result.exit_code == 0
     assert result.exception is None
