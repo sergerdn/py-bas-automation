@@ -84,7 +84,7 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Lint with mypy and flake8
+      - name: Build python package with poetry
         run: |
           mkdir ./dist && touch ./dist/README.md
           poetry check

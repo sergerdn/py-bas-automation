@@ -60,7 +60,7 @@ jobs:
       - name: Setup Python and Poetry
         uses: ./.github/actions/windows
 
-      - name: Lint with mypy and flake8
+      - name: Build python package with poetry
         run: |
           poetry check
           poetry run python scripts/update_readme_links.py
