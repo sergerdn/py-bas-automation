@@ -29,7 +29,6 @@ python = "^3.11"
 httpx = { extras = ["socks"], version = "^0.25.0" }
 pydantic = "^2.4.2"
 python-dotenv = "^1.0.0"
-psutil = "^5.9.5"
 websockets = "^11.0.3"
 filelock = "^3.12.4"
 fastapi = "^0.103.2"
@@ -52,6 +51,11 @@ autopep8 = "^2.0.4"
 pydeps = "^1.12.17"
 commitizen = "^3.10.0"
 nest-asyncio = "^1.5.8"
+
+[tool.poetry.group.dev-e2e-windows.dependencies]
+psutil = "^5.9.5"
+pywinauto = "^0.6.8"
+
 
 [tool.poetry.group.cmd.dependencies]
 click = "^8.1.7"
