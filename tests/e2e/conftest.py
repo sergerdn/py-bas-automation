@@ -14,7 +14,7 @@ from tests import ABS_PATH, FIXTURES_DIR
 from tests.e2e import FILE_LOCK_FILENAME, FIXTURES_TEMP_DIR
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def event_loop() -> Generator[asyncio.AbstractEventLoop, None, None]:
     loop = asyncio.get_event_loop()
     yield loop
@@ -99,19 +99,6 @@ def write_xml_config() -> None:
     assert os.path.exists(xml_config_filename)
 
 
-@pytest_asyncio.fixture(scope="session", autouse=True)
-async def _prepared_fixtures_dir() -> AsyncGenerator[str, None]:
-    if not os.path.exists(FIXTURES_TEMP_DIR):
-        os.mkdir(FIXTURES_TEMP_DIR)
-    print("Created temporary directory for e2e tests:", FIXTURES_TEMP_DIR)
-
-    yield FIXTURES_TEMP_DIR
-
-    print("All tests finished. Cleaning up...")
-    # Clean up by deleting the temporary directory
-    # await clean_dir(FIXTURES_TEMP_DIR)
-
-
 async def start_app(exe_path: FilePath) -> Application:
     assert exe_path.exists() and exe_path.is_file()
 
@@ -143,11 +130,16 @@ async def ensure_process_not_running(app: Application, timeout: int = 60) -> Non
         raise ValueError("Application process is still running")
 
 
-@pytest_asyncio.fixture(scope="session", autouse=True)
-async def _prepare_bas_app(_prepared_fixtures_dir: str) -> str:
+@pytest_asyncio.fixture(scope="module", autouse=True)
+async def _prepare_bas_app() -> AsyncGenerator[None, None]:
     """
     Asynchronous pytest fixture that sets up, runs, and tears down the application for e2e tests.
     """
+    print("")
+    print("Preparing the application for e2e tests...")
+
+    if not os.path.exists(FIXTURES_TEMP_DIR):
+        os.mkdir(FIXTURES_TEMP_DIR)
 
     with FILE_LOCK_FILENAME:
         # Define the path to the zipped application release
@@ -156,14 +148,14 @@ async def _prepare_bas_app(_prepared_fixtures_dir: str) -> str:
         assert os.path.isfile(src_zip_filename)
 
         # Create a temporary directory to extract and run the application
-        assert os.path.exists(_prepared_fixtures_dir)
+        assert os.path.exists(FIXTURES_TEMP_DIR)
 
         # Extract the zipped application to the temporary directory
         with zipfile.ZipFile(src_zip_filename, "r") as zip_ref:
-            zip_ref.extractall(_prepared_fixtures_dir)
+            zip_ref.extractall(FIXTURES_TEMP_DIR)
 
         # Define the directory path where the application was extracted
-        working_dir = os.path.join(_prepared_fixtures_dir, "PyBasFree")
+        working_dir = os.path.join(FIXTURES_TEMP_DIR, "PyBasFree")
         assert os.path.exists(working_dir)
         assert os.path.isdir(working_dir)
 
@@ -173,8 +165,8 @@ async def _prepare_bas_app(_prepared_fixtures_dir: str) -> str:
         # Start the application
         await start_app(exe_path=FilePath(exe_path))
 
-        # Reconnect to the application after its setup is complete
         try:
+            # Reconnect to the application after its setup is complete
             app = Application(backend="uia").connect(title="Language chooser", timeout=10)
         except TimeoutError:
             # not first run
@@ -211,7 +203,10 @@ async def _prepare_bas_app(_prepared_fixtures_dir: str) -> str:
         await ensure_process_not_running(app=app)
         await asyncio.sleep(5)
 
-        return exe_path
+        yield None  # run tests
+
+        print("")
+        print("Teardown the application for e2e tests...")
 
 
 @pytest_asyncio.fixture(scope="function")
