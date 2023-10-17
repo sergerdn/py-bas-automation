@@ -1,3 +1,10 @@
+## 0.1.12 (2023-10-17)
+
+### Feat
+
+- add unique_process_id to BasTask (#53)
+- add remote_debugging_port to BasTask (#52)
+
 ## 0.1.11 (2023-10-16)
 
 ### Feat
