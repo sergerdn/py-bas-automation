@@ -207,13 +207,13 @@ class TestTaskStorage:
         assert isinstance(task_storage.get_all(), List)
         assert len(task_storage.get_all()) == 10  # type: ignore
         assert task_storage.count() == 10
-        assert task_storage.get(task_id=uuid4()) is False  # Ensure a random ID doesn't return a task
+        assert task_storage.get(task_id=uuid4()) is None  # Ensure a random ID doesn't return a task
 
         # Validate that clearing the storage works and the count is zero
         assert task_storage.clear() is True
         assert task_storage.count() == 0
         assert task_storage.load_all() is False  # No tasks to load after clearing
-        assert task_storage.get(task_id=uuid4()) is False  # No tasks to retrieve after clearing
+        assert task_storage.get(task_id=uuid4()) is None  # No tasks to retrieve after clearing
 
         # Verify handling of duplicate tasks
         task = create_task(profiles_dir=profiles_dir, fingerprint_str=fingerprint_str)
@@ -246,3 +246,25 @@ class TestTaskStorage:
 
         # Save the task with proxy settings to the storage
         task_storage_write.save(task=task)
+
+    def test_update_remote_debugging_port(
+        self, storage_dir: DirectoryPath, profiles_dir: DirectoryPath, fingerprint_str: str
+    ) -> None:
+        # Initialize TaskStorage in read-write mode for saving tasks
+        task_storage_write = TaskStorage(storage_dir=storage_dir, mode=TaskStorageModeEnum.READ_WRITE)
+        task = create_task(profiles_dir=profiles_dir, fingerprint_str=fingerprint_str)
+
+        # Save the task with proxy settings to the storage
+        task_storage_write.save(task=task)
+
+        task.remote_debugging_port = 9022
+        task_storage_write.update(task=task)
+
+        # Initialize TaskStorage in read mode and load tasks
+        task_storage_read = TaskStorage(storage_dir=storage_dir, mode=TaskStorageModeEnum.READ)
+        assert task_storage_read.load_all() is True
+        task_saved = task_storage_read.get(task_id=task.task_id)
+
+        assert task_saved is not None
+        assert task_saved.remote_debugging_port is not None
+        assert task_saved.remote_debugging_port == 9022

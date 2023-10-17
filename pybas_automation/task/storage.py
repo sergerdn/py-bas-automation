@@ -3,7 +3,7 @@
 import json
 import os
 from enum import Enum
-from typing import Literal, Set, Union
+from typing import Set, Union
 from uuid import UUID
 
 import filelock
@@ -145,6 +145,32 @@ class TaskStorage:
             with self.task_file_path.open(mode="w", encoding="utf-8") as f:
                 json.dump(_tasks, f, indent=4)
 
+    def update(self, task: BasTask) -> None:
+        if self.mode == TaskStorageModeEnum.READ:
+            raise ValueError("Cannot store tasks in read mode.")
+        if self._lock is None:
+            raise ValueError("Lock is not initialized.")
+        if self._tasks is None:
+            raise ValueError("No tasks to update.")
+
+        with self._lock:
+            if task.task_id not in self._tasks_unique_id:
+                raise ValueError(f"Task with id {task.task_id} does not exist.")
+            found = False
+
+            for num, t in enumerate(self._tasks):
+                if t.task_id == task.task_id:
+                    found = True
+                    self._tasks[num] = task
+                    break
+            if not found:
+                raise ValueError(f"Task with id {task.task_id} does not exist.")
+
+            _tasks = jsonable_encoder(self._tasks)
+
+            with self.task_file_path.open(mode="w", encoding="utf-8") as f:
+                json.dump(_tasks, f, indent=4)
+
     def save_all(self) -> bool:
         """
         Save all tasks to the storage.
@@ -171,7 +197,7 @@ class TaskStorage:
 
         return True
 
-    def get(self, task_id: UUID) -> Union[BasTask, Literal[False]]:
+    def get(self, task_id: UUID) -> Union[BasTask, None]:
         """
         Get a task from the storage.
 
@@ -180,13 +206,13 @@ class TaskStorage:
         :return: The task if it exists, False otherwise.
         """
         if self._tasks is None:
-            return False
+            return None
 
         for task in self._tasks:
             if task.task_id == task_id or str(task.task_id) == task_id:
                 return task
 
-        return False
+        return None
 
     def get_all(self) -> Union[list[BasTask], None]:
         """
