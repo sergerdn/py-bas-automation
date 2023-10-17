@@ -58,6 +58,10 @@ async def run(task_id: UUID, remote_debugging_port: int, unique_process_id: str)
 
     # Update the task with the remote debugging port
     found_task.remote_debugging_port = remote_debugging_port
+    if unique_process_id:
+        # Update the task with the unique process ID
+        found_task.unique_process_id = unique_process_id
+
     task_storage.update(found_task)
 
     # Debug: Print the task details

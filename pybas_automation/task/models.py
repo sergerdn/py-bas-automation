@@ -23,5 +23,8 @@ class BasTask(BaseModel):
     # Port number, updated when task is invoked by a BAS compiled script
     remote_debugging_port: Union[int, None] = None
 
+    # Unique process ID, updated when task is invoked by a BAS compiled script
+    unique_process_id: Union[str, None] = None
+
     # Browser settings associated with the task
     browser_settings: BasActionBrowserSettings = Field(default_factory=BasActionBrowserSettings)
