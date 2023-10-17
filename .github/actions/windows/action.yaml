@@ -8,41 +8,20 @@ runs:
       shell: bash
       run: git lfs checkout
 
-    - name: Cache python dependencies
-      uses: actions/cache@v3
-      id: poetry-cache
-      with:
-        path: .venv
-        key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
-
-    - name: Get installed Playwright version
-      id: playwright-version
+    - name: Ensure python, poetry and playwright installed
       shell: bash
       run: |
-        echo "::set-output name=version::$(poetry show playwright | grep "version" | awk '{print $3}')"
-
-    - name: Cache playwright dependencies
-      uses: actions/cache@v3
-      id: playwright-cache
-      with:
-        path: ~\AppData\Local\ms-playwright\
-        key: playwright-${{ runner.os }}-${{ steps.playwright-version.outputs.version }}
-
-    - name: Ensure python poetry installed
-      shell: bash
-      run: |
-        echo "playwright version: ${{ steps.playwright-version.outputs.version }}"
         python --version
         poetry --version
+        poetry run playwright -V    
 
     - name: Install dependencies with Poetry
       shell: bash
-      if: steps.poetry-cache.outputs.cache-hit != 'true'
       run: |
         mkdir ./dist && touch ./dist/README.md
         poetry install --no-interaction
 
     - name: Install playwright dependencies with Poetry
       shell: bash
-      if: steps.playwright-cache.outputs.cache-hit != 'true'
-      run: poetry run playwright install chromium --with-deps
+      run: |
+        poetry run playwright install chromium --with-deps

@@ -16,7 +16,7 @@ clean:
 	@rm ./reports/* || echo ""
 	@touch ./reports/.gitkeep && git add ./reports/.gitkeep
 	@rm -rf ./coverage || echo ""
-	@rm -rf ./.coverage || echo ""
+	@rm -rf ./.coverage.* || echo ""
 	@rm .coverage || echo ""
 	$(MAKE) clean_pycache
 	rm -rf ./dist || echo ""
@@ -55,15 +55,19 @@ lint_docs:
 	poetry run pydocstyle pybas_automation
 
 tests:
-	poetry run pytest -vv tests/
+	poetry run pytest -s -vv tests/
 	$(MAKE) clean_pycache
 
 tests_coverage:
-	poetry run pytest -vv --cov=pybas_automation --cov-report=html:coverage/html tests
+	poetry run pytest -s -vv --cov=pybas_automation --cov-report=html:coverage/html tests/
 	start "" "./coverage/html/index.html"
 
 tests_coverage_e2e:
-	poetry run pytest -vv --cov=pybas_automation --cov-report=html:coverage/html/ tests/e2e
+	poetry run pytest -s -vv --cov=pybas_automation --cov-report=html:coverage/html/ tests/e2e/
+	start "" "./coverage/html/index.html"
+
+tests_coverage_functional:
+	poetry run pytest -s -vv --cov=pybas_automation --cov-report=html:coverage/html/ tests/functional/
 	start "" "./coverage/html/index.html"
 
 run_cmd_initial:

@@ -1,4 +1,4 @@
-name: Python CI
+name: Linux Python CI
 
 on:
   push:
@@ -14,7 +14,7 @@ permissions:
   contents: read
 
 jobs:
-  lint:
+  linux_lint:
     runs-on: ubuntu-22.04 # https://github.com/actions/runner-images#available-images
     steps:
       - name: Checkout code
@@ -37,8 +37,8 @@ jobs:
           poetry run mypy pybas_automation/ tests/
           poetry run flake8 pybas_automation/ tests/
 
-  test:
-    needs: [ lint ]
+  linux_test:
+    needs: [ linux_lint ]
     runs-on: ubuntu-22.04 # https://github.com/actions/runner-images#available-images
     steps:
       - name: Checkout code
@@ -59,7 +59,7 @@ jobs:
         run: |
           mkdir ./dist && touch ./dist/README.md
           mkdir -p ./coverage/lcov/functional
-          poetry run pytest -vv --cov=pybas_automation --cov-report=lcov:coverage/lcov/functional/coverage.lcov tests/functional
+          poetry run pytest -s -vv --cov=pybas_automation --cov-report=lcov:coverage/lcov/functional/coverage.lcov tests/functional
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v3
@@ -70,8 +70,8 @@ jobs:
           files: coverage/lcov/functional/coverage.lcov
           fail_ci_if_error: false
 
-  poetry_build:
-    needs: [ lint, test ]
+  linux_poetry_build:
+    needs: [ linux_lint, linux_test ]
     runs-on: ubuntu-22.04 # https://github.com/actions/runner-images#available-images
     steps:
       - name: Checkout code
