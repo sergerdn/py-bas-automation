@@ -1,6 +1,7 @@
 import os
 import shutil
 import tempfile
+import time
 from typing import Generator, Union
 
 import pytest
@@ -31,7 +32,15 @@ def _mock_app_data_dir() -> Generator[None, None, None]:
         # Once tests are done, undo the monkey patch and clean up the temporary directory.
         monkeypatch.undo()
         if os.path.exists(test_dir):
-            shutil.rmtree(test_dir)
+            for _x in range(0, 60):
+                try:
+                    shutil.rmtree(test_dir)
+                except Exception:  # type: ignore
+                    time.sleep(1)
+                    continue
+                break
+
+            shutil.rmtree(test_dir, ignore_errors=True)
 
 
 @pytest.fixture(scope="module")

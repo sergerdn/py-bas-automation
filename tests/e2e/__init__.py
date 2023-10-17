@@ -1,5 +1,12 @@
 import asyncio
+import os
 import shutil
+import tempfile
+
+import filelock
+
+FIXTURES_TEMP_DIR = os.path.join(tempfile.gettempdir(), "pybas_automation_tests_e2e_fixtures")
+FILE_LOCK_FILENAME = filelock.FileLock(os.path.join(FIXTURES_TEMP_DIR, ".lock"))
 
 
 async def clean_dir(dir_name: str) -> None:
