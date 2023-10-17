@@ -1,8 +1,11 @@
 # py-bas-automation
 
-[![Linux Python CI](https://github.com/sergerdn/py-bas-automation/actions/workflows/ci_linux.yml/badge.svg)](https://github.com/sergerdn/py-bas-automation/actions/workflows/ci.yml)
+[![Linux Python CI](https://github.com/sergerdn/py-bas-automation/actions/workflows/ci_linux.yml/badge.svg)](https://github.com/sergerdn/py-bas-automation/actions/workflows/ci_linux.yml)
 [![Windows Python CI](https://github.com/sergerdn/py-bas-automation/actions/workflows/ci_windows.yml/badge.svg)](https://github.com/sergerdn/py-bas-automation/actions/workflows/ci_windows.yml)
 [![codecov](https://codecov.io/gh/sergerdn/py-bas-automation/graph/badge.svg?token=YQYHYG9VVM)](https://codecov.io/gh/sergerdn/py-bas-automation)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+**Note: This library is currently in active development, and its API may undergo changes without notice at any time.**
 
 **Note:** This project originally started as a `working proof of concept` and does not aim to offer extensive support or
 documentation. It serves as a fundamental demonstration of the concept and should be considered a foundation for further
