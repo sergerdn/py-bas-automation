@@ -25,7 +25,7 @@ customizable Windows GUI program, while controlling it with Python ❤️.
 - **Proxy Support:** The application supports proxy providers such as [Brightdata](https://brightdata.com/). Please
   note that this is a **paid** service.
 - **Executing Browser Automation Studio (BAS) Actions from Python**: Implement BAS actions from Python using the
-  un-documented API. This includes actions such as retrieving page source, emulating mouse movements, etc. (Note: Not
+  un-documented API. This includes actions such as retrieving page source, `emulating mouse movements`, etc. (Note: Not
   all functions are currently supported).
 - **Playwright Control:** The application leverages [Playwright](https://playwright.dev/python/) to efficiently manage
   and control BAS.
@@ -141,6 +141,7 @@ Here are the corresponding commands for each step:
 ```bash
 git clone git@github.com:sergerdn/py-bas-automation.git
 cd py-bas-automation
+git lfs pull
 poetry install
 ```
 
@@ -156,11 +157,11 @@ Please note that this is not currently recommended as the latest release may hav
 
 ## How to Run the Application
 
-- **Download the BAS Program:** Start by downloading the latest version of the compiled BAS program, named
-  _PyBasFree.zip_. This can be found under the [Releases](https://github.com/sergerdn/py-bas-automation/releases)
-  section on the GitHub page. Once downloaded, extract the contents and run _PyBasFree.exe_.
+- **Download the BAS Program:** Begin by downloading the latest version of the compiled BAS program,
+  called  `PyBasFree.zip` . You can find this file in the project directory
+  under [PyBasFree.zip](bas_release/PyBasFree.zip). After downloading, extract the contents and
+  execute  `PyBasFree.exe`.
 
-  ![Releases section](docs/images/releases_1.png)
 
 - **Set Variables in the BAS GUI:** After running the BAS program, proceed to set the necessary variables within the
   BAS graphical user interface (GUI).
@@ -384,9 +385,9 @@ if __name__ == "__main__":
 ## Planned Improvements:
 
 - [x] Add Proxy support.
+- [x] Develop end-to-end tests to thoroughly assess the entire workflow.
 - [ ] Include build scripts for converting Python files to executable format.
 - [ ] Expand the repository with more illustrative examples.
-- [ ] Develop end-to-end tests to thoroughly assess the entire workflow.
 
 ## Contributing
 
