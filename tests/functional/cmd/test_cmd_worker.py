@@ -65,3 +65,10 @@ class TestCmdWorker:
         # Ensure the command executed successfully
         assert result.exception is None
         assert result.exit_code == 0
+
+        # Load the tasks from the file and retrieve the remote_debugging_port
+        tasks_json = json.loads(codecs.open(task_file, "r", "utf-8").read())
+        task_remote_debugging_port = tasks_json[0].get("remote_debugging_port")
+
+        assert task_remote_debugging_port is not None
+        assert task_remote_debugging_port == remote_debugging_port

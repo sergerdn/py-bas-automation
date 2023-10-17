@@ -45,7 +45,7 @@ async def run(task_id: UUID, remote_debugging_port: int, unique_process_id: str)
 
     logger.debug("Retrieving task with ID: %s", task_id)
 
-    task_storage = TaskStorage(mode=TaskStorageModeEnum.READ)
+    task_storage = TaskStorage(mode=TaskStorageModeEnum.READ_WRITE)
 
     # Ensure there are tasks to load
     if not task_storage.load_all():
@@ -55,6 +55,10 @@ async def run(task_id: UUID, remote_debugging_port: int, unique_process_id: str)
     found_task = task_storage.get(task_id=task_id)
     if not found_task:
         raise ValueError(f"Task with ID {task_id} not found")
+
+    # Update the task with the remote debugging port
+    found_task.remote_debugging_port = remote_debugging_port
+    task_storage.update(found_task)
 
     # Debug: Print the task details
     print(json.dumps(found_task.model_dump(mode="json"), indent=4))

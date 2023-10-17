@@ -66,6 +66,10 @@ tests_coverage_e2e:
 	poetry run pytest -vv --cov=pybas_automation --cov-report=html:coverage/html/ tests/e2e
 	start "" "./coverage/html/index.html"
 
+tests_coverage_functional:
+	poetry run pytest -vv --cov=pybas_automation --cov-report=html:coverage/html/ tests/functional
+	start "" "./coverage/html/index.html"
+
 run_cmd_initial:
 	@$(MAKE) clean
 	poetry run python cmd_initial.py --bas_fingerprint_key="${FINGERPRINT_KEY}" --limit_tasks=1
