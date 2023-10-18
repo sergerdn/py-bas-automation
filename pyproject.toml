@@ -38,10 +38,9 @@ pytest = "^7.4.2"
 pytest-vcr = "^1.0.2"
 pycountry = "^22.3.5"
 black = "^23.10.0"
-mypy = "^1.6.0"
+mypy = "^1.6.1"
 isort = "^5.12.0"
 flake8 = "^6.1.0"
-types-psutil = "^5.9.5.16"
 pytest-cov = "^4.1.0"
 pytest-asyncio = "^0.21.1"
 pydocstyle = "^6.3.0"
@@ -49,16 +48,17 @@ pylint = { extras = ["spelling"], version = "^3.0.1" }
 pylint-pydantic = "^0.3.0"
 autopep8 = "^2.0.4"
 pydeps = "^1.12.17"
-commitizen = "^3.10.0"
+commitizen = "^3.12.0"
 nest-asyncio = "^1.5.8"
 
 [tool.poetry.group.dev-e2e-windows.dependencies]
-psutil = "^5.9.5"
+psutil = "^5.9.6"
+types-psutil = "^5.9.5.17"
 pywinauto = "^0.6.8"
 
 [tool.poetry.group.cmd.dependencies]
 click = "^8.1.7"
-playwright = "^1.38.0"
+playwright = {extras = ["chromium"], version = "^1.39.0"}
 
 [tool.poetry.group.cmd-dev.dependencies]
 pytest-playwright = "^0.4.2"

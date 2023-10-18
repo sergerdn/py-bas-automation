@@ -105,3 +105,8 @@ bump_version:
 
 run_pydeps:
 	pydeps pybas_automation
+
+poetry_upgrade:
+	poetry up --latest
+	poetry update
+	poetry show --outdated
