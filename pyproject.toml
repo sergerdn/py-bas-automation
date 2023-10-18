@@ -56,7 +56,6 @@ nest-asyncio = "^1.5.8"
 psutil = "^5.9.5"
 pywinauto = "^0.6.8"
 
-
 [tool.poetry.group.cmd.dependencies]
 click = "^8.1.7"
 playwright = "^1.38.0"

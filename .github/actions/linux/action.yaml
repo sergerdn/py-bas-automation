@@ -46,21 +46,19 @@ runs:
         path: ~/.cache/ms-playwright/
         key: playwright-${{ runner.os }}-${{ steps.playwright-version.outputs.version }}
 
-    - name: Ensure python poetry installed
+    - name: Ensure python, poetry and playwright installed
       shell: bash
       run: |
-        echo "playwright version: ${{ steps.playwright-version.outputs.version }}"
         python --version
         poetry --version
+        poetry run playwright -V
 
     - name: Install dependencies with Poetry
       shell: bash
-      if: steps.poetry-cache.outputs.cache-hit != 'true'
       run: |
         mkdir ./dist && touch ./dist/README.md
         poetry install --no-interaction --without dev-e2e-windows
 
     - name: Install playwright dependencies with Poetry
       shell: bash
-      if: steps.playwright-cache.outputs.cache-hit != 'true'
       run: poetry run playwright install chromium --with-deps
