@@ -8,12 +8,11 @@ runs:
       shell: bash
       run: git lfs checkout
 
-    - name: Ensure python, poetry and playwright installed
+    - name: Ensure python, poetry installed
       shell: bash
       run: |
         python --version
         poetry --version
-        poetry run playwright -V    
 
     - name: Install dependencies with Poetry
       shell: bash
@@ -25,3 +24,8 @@ runs:
       shell: bash
       run: |
         poetry run playwright install chromium --with-deps
+
+    - name: Ensure playwright installed
+      shell: bash
+      run: |
+         poetry run playwright -V
