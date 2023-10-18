@@ -49,7 +49,7 @@ pylint = { extras = ["spelling"], version = "^3.0.1" }
 pylint-pydantic = "^0.3.0"
 autopep8 = "^2.0.4"
 pydeps = "^1.12.17"
-commitizen = "^3.10.0"
+commitizen = "^3.12.0"
 nest-asyncio = "^1.5.8"
 
 [tool.poetry.group.dev-e2e-windows.dependencies]
