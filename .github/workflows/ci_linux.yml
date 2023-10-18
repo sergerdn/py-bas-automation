@@ -33,7 +33,6 @@ jobs:
           BRIGHTDATA_USERNAME: ${{ secrets.BRIGHTDATA_USERNAME }}
           BRIGHTDATA_PASSWORD: ${{ secrets.BRIGHTDATA_PASSWORD }}
         run: |
-          mkdir ./dist && touch ./dist/README.md
           poetry run mypy pybas_automation/ tests/
           poetry run flake8 pybas_automation/ tests/
 
@@ -86,7 +85,6 @@ jobs:
 
       - name: Build python package with poetry
         run: |
-          mkdir ./dist && touch ./dist/README.md
           poetry check
           poetry run python scripts/update_readme_links.py
           poetry build
