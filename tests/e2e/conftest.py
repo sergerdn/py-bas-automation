@@ -21,6 +21,14 @@ def event_loop() -> Generator[asyncio.AbstractEventLoop, None, None]:
     loop.close()
 
 
+def get_bas_app_name() -> str:
+    bas_app_name = os.environ.get("BAS_APP_NAME", "PyBasFree").strip()
+    if not bas_app_name:
+        raise ValueError("BAS_APP_NAME not set")
+
+    return bas_app_name
+
+
 def generate_xml_config() -> str:
     """
     Prepares the XML config for the e2e tests.
@@ -32,7 +40,7 @@ def generate_xml_config() -> str:
     assert len(fingerprint_key) == 64
 
     # Validate the presence of XML config and command files
-    xml_config_path = os.path.join(FIXTURES_DIR, "Actual.PyBasFree.xml.default.xml")
+    xml_config_path = os.path.join(FIXTURES_DIR, "Actual.PyBasFreeTemplate.xml.default.xml")
     assert os.path.exists(xml_config_path)
     assert os.path.isfile(xml_config_path)
 
@@ -71,17 +79,19 @@ def generate_xml_config() -> str:
 
 
 def write_xml_config() -> None:
+    bas_app_name = get_bas_app_name()
+
     # Generate xml configuration required to run the application
     xml_config = generate_xml_config()
 
     # Define the directory path where the application was extracted
-    working_dir = os.path.join(FIXTURES_TEMP_DIR, "PyBasFree")
+    working_dir = os.path.join(FIXTURES_TEMP_DIR, f"{bas_app_name}")
 
     assert os.path.exists(working_dir)
     assert os.path.isdir(working_dir)
 
     # List directories under 'appsremote' to find the application's session directory
-    created_dirs = os.listdir(os.path.join(working_dir, "appsremote", "PyBasFree"))
+    created_dirs = os.listdir(os.path.join(working_dir, "appsremote", f"{bas_app_name}"))
 
     # Get the first directory starting with 'SID' which represents the application's session
     matching_dir = next((x for x in created_dirs if x.startswith("SID")), None)
@@ -89,7 +99,7 @@ def write_xml_config() -> None:
 
     # Define the path to the XML configuration file of the application
     xml_config_filename = os.path.join(
-        working_dir, "appsremote", "PyBasFree", matching_dir, "engine", "Actual.PyBasFree.xml"
+        working_dir, "appsremote", f"{bas_app_name}", matching_dir, "engine", f"Actual.{bas_app_name}.xml"
     )
 
     # Write the generated xml configuration to the appropriate location
@@ -135,6 +145,9 @@ async def _prepare_bas_app() -> AsyncGenerator[None, None]:
     """
     Asynchronous pytest fixture that sets up, runs, and tears down the application for e2e tests.
     """
+
+    bas_app_name = get_bas_app_name()
+
     print("")
     print("Preparing the application for e2e tests...")
 
@@ -143,7 +156,7 @@ async def _prepare_bas_app() -> AsyncGenerator[None, None]:
 
     with FILE_LOCK_FILENAME:
         # Define the path to the zipped application release
-        src_zip_filename = os.path.join(ABS_PATH, "bas_release", "PyBasFree.zip")
+        src_zip_filename = os.path.join(ABS_PATH, "bas_release", f"{bas_app_name}.zip")
         assert os.path.exists(src_zip_filename)
         assert os.path.isfile(src_zip_filename)
 
@@ -155,12 +168,12 @@ async def _prepare_bas_app() -> AsyncGenerator[None, None]:
             zip_ref.extractall(FIXTURES_TEMP_DIR)
 
         # Define the directory path where the application was extracted
-        working_dir = os.path.join(FIXTURES_TEMP_DIR, "PyBasFree")
+        working_dir = os.path.join(FIXTURES_TEMP_DIR, f"{bas_app_name}")
         assert os.path.exists(working_dir)
         assert os.path.isdir(working_dir)
 
         # Define the path to the executable of the application
-        exe_path = os.path.join(working_dir, "PyBasFree.exe")
+        exe_path = os.path.join(working_dir, f"{bas_app_name}.exe")
 
         # Start the application
         await start_app(exe_path=FilePath(exe_path))
@@ -196,7 +209,7 @@ async def _prepare_bas_app() -> AsyncGenerator[None, None]:
         write_xml_config()
 
         # Reconnect to the application main window
-        app = Application(backend="uia").connect(title_re="^PyBasFree", timeout=10)
+        app = Application(backend="uia").connect(title_re=f"^{bas_app_name}", timeout=10)
         assert app.is_process_running() is True
 
         app.kill()
@@ -211,7 +224,9 @@ async def _prepare_bas_app() -> AsyncGenerator[None, None]:
 
 @pytest_asyncio.fixture(scope="function")
 async def bas_app() -> AsyncGenerator[Application, None]:
-    exe_path = os.path.join(FIXTURES_TEMP_DIR, "PyBasFree", "PyBasFree.exe")
+    bas_app_name = get_bas_app_name()
+
+    exe_path = os.path.join(FIXTURES_TEMP_DIR, f"{bas_app_name}", f"{bas_app_name}.exe")
 
     with FILE_LOCK_FILENAME:
         write_xml_config()
@@ -221,7 +236,7 @@ async def bas_app() -> AsyncGenerator[Application, None]:
         await ensure_process_not_running(app=app)
 
         # Reconnect to the application main window
-        app = Application(backend="uia").connect(title_re="^PyBasFree", timeout=10)
+        app = Application(backend="uia").connect(title_re=f"^{bas_app_name}", timeout=10)
         assert app.is_process_running() is True
 
         try:
