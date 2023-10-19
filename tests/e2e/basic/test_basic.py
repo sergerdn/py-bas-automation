@@ -63,9 +63,6 @@ class TestBasic2e2:
 
     @pytest.mark.asyncio
     async def test_basic(self, bas_app: Application) -> None:
-        pass
-
-        # Finding the window which contains the radio buttons
         # Find the main window or parent which contains the DEBUG Static control
         debug_window = bas_app.window(title="DEBUG", control_type="Text", top_level_only=False)
 
@@ -85,7 +82,9 @@ class TestBasic2e2:
         # window. In DEBUG mode, once the script finishes execution, the count of children should change,
         # signaling that the browser is clickable.
         browser_1_panel = bas_app.window(title="Show browser", control_type="Text", top_level_only=False)
+
         while len(browser_1_panel.wrapper_object().parent().children()) == 3:
+            print("Waiting for the app to finished...")
             # Pause for 1 second before rechecking to prevent excessive CPU usage.
             await asyncio.sleep(1)
 

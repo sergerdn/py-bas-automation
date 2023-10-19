@@ -59,16 +59,16 @@ tests:
 	$(MAKE) clean_pycache
 
 tests_coverage:
-	poetry run pytest -s -vv --cov=pybas_automation --cov-report=html:coverage/html tests/
+	poetry run pytest -s -vv --cov=pybas_automation --cov-report=html:coverage/html/ tests/
 	start "" "./coverage/html/index.html"
 
 tests_coverage_e2e:
-	poetry run pytest -s -vv --cov=pybas_automation --cov-report=html:coverage/html/ tests/e2e/
-	start "" "./coverage/html/index.html"
+	poetry run pytest -s -vv --cov=pybas_automation --cov-report=html:coverage/html/e2e/ tests/e2e/
+	start "" "./coverage/html/e2e/index.html"
 
 tests_coverage_functional:
-	poetry run pytest -s -vv --cov=pybas_automation --cov-report=html:coverage/html/ tests/functional/
-	start "" "./coverage/html/index.html"
+	poetry run pytest -s -vv --cov=pybas_automation --cov-report=html:coverage/html/functional/ tests/functional/
+	start "" "./coverage/html/functional/index.html"
 
 run_cmd_initial:
 	@$(MAKE) clean
@@ -105,3 +105,8 @@ bump_version:
 
 run_pydeps:
 	pydeps pybas_automation
+
+poetry_upgrade:
+	poetry up --latest
+	poetry update
+	poetry show --outdated
