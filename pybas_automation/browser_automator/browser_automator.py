@@ -10,14 +10,19 @@ This module provides:
 import json
 from typing import Any, Dict, List, Tuple, Union
 
+import filelock
 import httpx
 from playwright.async_api import Browser, BrowserContext, Locator, Page
 from playwright.async_api import Playwright as AsyncPlaywright
-from playwright.async_api import async_playwright
+from playwright.async_api import StorageState, async_playwright
 
+from pybas_automation import STORAGE_SUBDIR
 from pybas_automation.browser_automator.cdp_client import CDPClient
 from pybas_automation.browser_automator.models import WebsocketUrl, WsUrlModel
+from pybas_automation.browser_profile import BrowserProfile
 from pybas_automation.utils import get_logger
+
+from .settings import BROWSER_STATE_FILENAME
 
 logger = get_logger()
 
@@ -97,6 +102,7 @@ class BrowserAutomator:
     ws_endpoint: WsUrlModel
     remote_debugging_port: int
 
+    browser_profile: BrowserProfile
     browser_version: Union[str, None]
     pw: AsyncPlaywright
     browser: Browser
@@ -104,15 +110,29 @@ class BrowserAutomator:
     page: Page
     cdp_client: CDPClient
 
-    unique_process_id: str
+    unique_process_id: Union[str, None]
     _javascript_code: str
 
-    def __init__(self, remote_debugging_port: int, unique_process_id: Union[str, None] = None):
-        """Initialize BrowserAutomator with a given remote debugging port."""
+    _lock: filelock.FileLock
+
+    def __init__(
+        self, browser_profile: BrowserProfile, remote_debugging_port: int, unique_process_id: Union[str, None] = None
+    ):
+        """
+        Initialize the BrowserAutomator instance.
+
+        :param browser_profile: The browser profile to use.
+        :param remote_debugging_port: The remote debugging port to connect to.
+        :param unique_process_id: A unique identifier for the `Worker.exe` process. Retrieved from the command line.
+        """
+
+        self.browser_profile = browser_profile
         self.remote_debugging_port = int(remote_debugging_port)
         if unique_process_id:
             self.unique_process_id = unique_process_id
             self._javascript_code = f"location.reload['_bas_hide_{unique_process_id}']"
+        else:
+            self.unique_process_id = None
 
     def get_ws_endpoint(self) -> str:
         """
@@ -144,7 +164,7 @@ class BrowserAutomator:
 
         data = await self.cdp_client.send_command("Browser.getVersion")
 
-        product_version = data.get("result", {}).get("product", None)
+        product_version = data.get("product", None)
         if not product_version:
             raise ValueError("Unable to fetch browser version")
 
@@ -160,10 +180,10 @@ class BrowserAutomator:
 
         data = await self.cdp_client.send_command("Target.getTargets")
 
-        if not data.get("result", None):
+        if not data.get("targetInfos", None):
             raise ValueError("Unable to fetch attached sessions")
 
-        return [target_info for target_info in data["result"]["targetInfos"] if target_info["attached"]]
+        return [target_info for target_info in data["targetInfos"] if target_info["attached"]]
 
     async def __aenter__(self) -> "BrowserAutomator":
         """
@@ -186,8 +206,53 @@ class BrowserAutomator:
         self.context = self.browser.contexts[0]
         self.page = self.context.pages[0]
 
+        # Enables storage tracking, storage events will now be delivered to the client.
+        # await self.cdp_client.send_command("DOMStorage.enable")
+
         logger.debug("Successfully connected to browser: %s", self.browser)
+
         return self
+
+    async def save_browser_data(self) -> StorageState:
+        """
+        Export browser data to the file like cookies, local storage, etc.
+        :return: StorageState
+        """
+
+        sub_dir = self.browser_profile.profile_dir.joinpath(STORAGE_SUBDIR)
+        sub_dir.mkdir(parents=False, exist_ok=True)
+
+        # Save storage state into the file.
+        filename = sub_dir.joinpath(BROWSER_STATE_FILENAME)
+        return await self.context.storage_state(path=filename)
+
+    async def load_browser_data(self) -> StorageState:
+        """
+        Load browser data from the file like cookies, local storage, etc.
+        :return: StorageState
+        """
+
+        sub_dir = self.browser_profile.profile_dir.joinpath(STORAGE_SUBDIR)
+        sub_dir.mkdir(parents=False, exist_ok=True)
+
+        # Load storage state from the file.
+        filename = sub_dir.joinpath(BROWSER_STATE_FILENAME)
+        if not filename.exists():
+            raise FileNotFoundError(f"File {filename} not found")
+
+        _ = await self.browser.new_context(storage_state=filename)
+
+        raise NotImplementedError("Not implemented yet")
+
+    async def get_cookies(self) -> Dict:
+        """
+        Get all cookies from the browser.
+
+        :return: All cookies from the browser.
+        """
+
+        # https://chromedevtools.github.io/devtools-protocol/tot/Storage/#method-getCookies
+        return await self.cdp_client.send_command("Storage.getCookies")
 
     async def _bas_safe_call(self, page: Page, javascript_func_code: str) -> Any:
         """
