@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pybas-automation"
-version = "0.1.13"
+version = "0.1.14"
 description = "A Python library for automating BrowserAutomationStudio (BAS) using headless Chromium browsers and Windows GUI program."
 authors = ["sergerdn <64213648+sergerdn@users.noreply.github.com>"]
 homepage = "https://github.com/sergerdn/py-bas-automation"
@@ -13,13 +13,13 @@ classifiers = [
     "Topic :: Internet :: WWW/HTTP :: Browsers",
     "Topic :: Software Development :: Libraries :: Python Modules"
 ]
-readme = "dist/README.md"
+readme = ".pypi/README.md"
 license = "MIT"
 include = ["CHANGELOG.md"]
 
 [tool.commitizen]
 name = "cz_conventional_commits"
-version = "0.1.13"
+version = "0.1.14"
 version_files = [
     "pyproject.toml:version",
 ]
@@ -85,7 +85,7 @@ exclude = "tests/contrib"
 max-line-length = 120
 
 #[tool.poetry.scripts]
-#build-readme = "python scripts/update_readme_links.py"
+#install = "python scripts/update_readme_links.py"
 
 #[tool.pytest]
 #addopts = "--cov=pybas_automation --cov-report html"

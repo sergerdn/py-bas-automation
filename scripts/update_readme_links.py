@@ -9,7 +9,7 @@ from urllib.parse import urljoin
 import os
 
 PROJECT_PATH = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../"))
-DIST_FOLDER = os.path.join(PROJECT_PATH, "dist")
+DIST_FOLDER = os.path.join(PROJECT_PATH, "./.pypi")
 
 
 def update_readme_links(readme_path, target_readme_path, base_url, image_base_url):
