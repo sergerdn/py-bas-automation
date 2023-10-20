@@ -52,4 +52,7 @@ class CDPClient:
             data = json.loads(response)
             logger.debug("Received message: %s", data)
 
-            return dict(data)
+            if not data.get("result"):
+                raise ValueError(f"Unable to fetch result: {data}")
+
+            return dict(data.get("result"))

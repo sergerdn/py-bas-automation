@@ -110,8 +110,17 @@ class TestBasic2e2:
 
         print(task_id, unique_process_id, remote_debugging_port)
 
+        browser_profile_storage = BrowserProfileStorage()
+        browser_profile_storage.load_all()
+
+        profile_name = os.path.basename(task.browser_settings.profile.profile_folder_path)
+        browser_profile = browser_profile_storage.load(profile_name=profile_name)
+        # print(browser_profile)
+
         async with BrowserAutomator(
-            remote_debugging_port=remote_debugging_port, unique_process_id=unique_process_id
+            browser_profile=browser_profile,
+            remote_debugging_port=remote_debugging_port,
+            unique_process_id=unique_process_id,
         ) as automator:
             ws_endpoint = automator.get_ws_endpoint()
 

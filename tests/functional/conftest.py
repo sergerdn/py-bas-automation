@@ -1,19 +1,29 @@
+import asyncio
 import os
 import shutil
 import tempfile
-from typing import Callable, Dict, Generator
+from typing import AsyncGenerator, Callable, Dict, Generator
 from urllib.parse import parse_qs, urlencode, urlparse
 from zipfile import ZipFile
 
 import nest_asyncio  # type: ignore
 import pytest
-from playwright.sync_api import BrowserContext, sync_playwright
+import pytest_asyncio
+from playwright.async_api import async_playwright
+from playwright.sync_api import BrowserContext
 from pydantic import DirectoryPath
 
 from tests import FIXTURES_DIR, _find_free_port
 
 # Patch asyncio to support nested asynchronous event loops.
 nest_asyncio.apply()
+
+
+@pytest.fixture(scope="session")
+def event_loop() -> Generator[asyncio.AbstractEventLoop, None, None]:
+    loop = asyncio.get_event_loop()
+    yield loop
+    loop.close()
 
 
 @pytest.fixture(scope="module")
@@ -87,8 +97,8 @@ def free_port() -> int:
     return _find_free_port()
 
 
-@pytest.fixture(scope="session")
-def browser_data() -> Generator[tuple[BrowserContext, DirectoryPath, int], None, None]:
+@pytest_asyncio.fixture(scope="session")
+async def browser_data() -> AsyncGenerator[tuple[BrowserContext, DirectoryPath, int], None]:
     """
     Initialize a browser with a given user data directory and remote debugging port.
 
@@ -97,15 +107,20 @@ def browser_data() -> Generator[tuple[BrowserContext, DirectoryPath, int], None,
 
     user_data_dir = DirectoryPath(tempfile.mkdtemp())
     port = _find_free_port()
+    debug_tests = os.environ.get("DEBUG_TESTS", "false").lower() == "true"
 
-    with sync_playwright() as playwright:
-        browser = playwright.chromium.launch_persistent_context(
+    async with async_playwright() as playwright:
+        browser = await playwright.chromium.launch_persistent_context(
             user_data_dir=user_data_dir,
-            headless=True,
+            headless=not debug_tests,
             args=[f"--remote-debugging-port={port}"],
         )
 
-        yield browser, user_data_dir, port
+        # cdp_browser = playwright.chromium.connect_over_cdp(f"http://localhost:{port}")
+        # data = browser.storage_state()
+        # cdp_browser = browser.new_cdp_session(browser.new_page())
+
+        yield browser, user_data_dir, port  # type: ignore
 
     shutil.rmtree(user_data_dir, ignore_errors=True)
 
