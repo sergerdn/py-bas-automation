@@ -141,7 +141,28 @@ class BrowserProfileStorage:
         :param profile_name: The name of the browser profile.
         :return: BrowserProfile instance.
         """
-        raise NotImplementedError()
+        profile_dir = self.storage_dir.joinpath(profile_name)
+
+        if not profile_dir.exists():
+            raise FileNotFoundError(f"Browser profile not found: {profile_dir}")
+        if not profile_dir.is_dir():
+            raise ValueError(f"Browser profile is not a directory: {profile_dir}")
+
+        browser_profile = BrowserProfile(profile_dir=profile_dir)
+
+        sub_dir = profile_dir.joinpath(STORAGE_SUBDIR)
+
+        fingerprint_filename = sub_dir.joinpath(_fingerprint_raw_filename)
+        if fingerprint_filename.exists():
+            fingerprint_raw = fingerprint_filename.open("r", encoding="utf-8").read()
+            browser_profile.fingerprint_raw = fingerprint_raw
+
+        proxy_filename = sub_dir.joinpath(_proxy_filename)
+        if proxy_filename.exists():
+            _proxy = json.loads(proxy_filename.open("r", encoding="utf-8").read())
+            browser_profile.proxy = BasActionBrowserProxy(**_proxy)
+
+        return browser_profile
 
     def load_all(self) -> List[BrowserProfile]:
         """
@@ -153,21 +174,7 @@ class BrowserProfileStorage:
             self._profiles = []
 
         for profile_name in os.listdir(self.storage_dir):
-            profile_dir = self.storage_dir.joinpath(profile_name)
-            browser_profile = BrowserProfile(profile_dir=profile_dir)
-
-            sub_dir = profile_dir.joinpath(STORAGE_SUBDIR)
-
-            fingerprint_filename = sub_dir.joinpath(_fingerprint_raw_filename)
-            if fingerprint_filename.exists():
-                fingerprint_raw = fingerprint_filename.open("r", encoding="utf-8").read()
-                browser_profile.fingerprint_raw = fingerprint_raw
-
-            proxy_filename = sub_dir.joinpath(_proxy_filename)
-            if proxy_filename.exists():
-                _proxy = json.loads(proxy_filename.open("r", encoding="utf-8").read())
-                browser_profile.proxy = BasActionBrowserProxy(**_proxy)
-
+            browser_profile = self.load(profile_name=profile_name)
             self._profiles.append(browser_profile)
 
         return self._profiles

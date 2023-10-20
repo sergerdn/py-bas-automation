@@ -17,6 +17,7 @@ from dotenv import load_dotenv
 from playwright.async_api import async_playwright
 
 from pybas_automation.browser_automator import BrowserAutomator
+from pybas_automation.browser_profile import BrowserProfileStorage
 from pybas_automation.task import TaskStorage, TaskStorageModeEnum
 
 # Load environment variables
@@ -68,11 +69,23 @@ async def run(task_id: UUID, remote_debugging_port: int, unique_process_id: str)
     print(json.dumps(found_task.model_dump(mode="json"), indent=4))
     screenshot_filename = os.path.join(os.path.dirname(__file__), "reports", f"{found_task.task_id}_screenshot.png")
 
+    browser_profile_storage = BrowserProfileStorage()
+    browser_profile_storage.load_all()
+
+    profile_name = os.path.basename(found_task.browser_settings.profile.profile_folder_path)
+    browser_profile = browser_profile_storage.load(profile_name=profile_name)
+    print(browser_profile.profile_dir)
+
     async with BrowserAutomator(
-        remote_debugging_port=remote_debugging_port, unique_process_id=unique_process_id
+        browser_profile=browser_profile,
+        remote_debugging_port=remote_debugging_port,
+        unique_process_id=unique_process_id,
     ) as automator:
         # Variant 1: Work with the BrowserAutomator API
         await automator.page.goto("https://playwright.dev/python/")
+
+        await automator.save_browser_data()
+
         if unique_process_id:
             # With Automator, you can call function from the BrowserAutomationStudio API.
             logger.info("Unique process ID: %s", unique_process_id)
@@ -83,6 +96,9 @@ async def run(task_id: UUID, remote_debugging_port: int, unique_process_id: str)
             await elem.click()
 
             logger.debug("Page content from BAS_SAFE api: %s ...", page_content[:100])
+
+        #  Export browser data to the file like cookies, local storage
+        await automator.save_browser_data()
 
         # Variant 1: Work with the Playwright API directly.
         ws_endpoint = automator.get_ws_endpoint()
@@ -153,7 +169,6 @@ def main(
     )
 
     logger.info("Initializing cmd_worker with PID: %s", process.pid)
-
     asyncio.run(run(task_id=task_id, remote_debugging_port=remote_debugging_port, unique_process_id=unique_process_id))
 
 
