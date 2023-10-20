@@ -1,3 +1,9 @@
+## 0.1.15 (2023-10-20)
+
+### Feat
+
+- initial implementation of exporting browser data (#67)
+
 ## 0.1.14 (2023-10-19)
 
 ### Fix
