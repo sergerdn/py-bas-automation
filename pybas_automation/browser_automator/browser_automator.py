@@ -12,13 +12,14 @@ from typing import Any, Dict, List, Tuple, Union
 
 import filelock
 import httpx
-from playwright.async_api import Browser, BrowserContext, Locator, Page
+from fastapi.encoders import jsonable_encoder
+from playwright.async_api import Browser, BrowserContext, CDPSession, Locator, Page
 from playwright.async_api import Playwright as AsyncPlaywright
 from playwright.async_api import StorageState, async_playwright
 
 from pybas_automation import STORAGE_SUBDIR
 from pybas_automation.browser_automator.cdp_client import CDPClient
-from pybas_automation.browser_automator.models import WebsocketUrl, WsUrlModel
+from pybas_automation.browser_automator.models import StorageStateModel, WebsocketUrl, WsUrlModel
 from pybas_automation.browser_profile import BrowserProfile
 from pybas_automation.utils import get_logger
 
@@ -109,6 +110,7 @@ class BrowserAutomator:
     context: BrowserContext
     page: Page
     cdp_client: CDPClient
+    cdp_session: CDPSession
 
     unique_process_id: Union[str, None]
     _javascript_code: str
@@ -185,6 +187,12 @@ class BrowserAutomator:
 
         return [target_info for target_info in data["targetInfos"] if target_info["attached"]]
 
+    async def _prepare_cdp(self) -> None:
+        # Enables network tracking, network events will now be delivered to the client.
+        await self.cdp_session.send("Network.setCacheDisabled", params={"cacheDisabled": False})
+        # https://chromedevtools.github.io/devtools-protocol/tot/DOMStorage/#method-enable
+        await self.cdp_session.send("DOMStorage.enable")
+
     async def __aenter__(self) -> "BrowserAutomator":
         """
         Asynchronous enter method to initialize the connection and retrieve session details.
@@ -198,38 +206,75 @@ class BrowserAutomator:
         await self._get_browser_version()
         logger.info("Retrieved browser version: %s", self.browser_version)
 
-        sessions = await self._fetch_attached_sessions()
-        logger.debug("Attached sessions retrieved: %s", sessions)
-
         self.pw = await async_playwright().start()
         self.browser = await self.pw.chromium.connect_over_cdp(self.ws_endpoint.ws_url.unicode_string())
         self.context = self.browser.contexts[0]
         self.page = self.context.pages[0]
 
-        # Enables storage tracking, storage events will now be delivered to the client.
-        # await self.cdp_client.send_command("DOMStorage.enable")
+        # Fetch the attached sessions
+        sessions = await self._fetch_attached_sessions()
+        logger.debug("Attached sessions retrieved: %s", sessions)
+
+        self.cdp_session: CDPSession = await self.context.new_cdp_session(self.page)
+        await self._prepare_cdp()
 
         logger.debug("Successfully connected to browser: %s", self.browser)
 
         return self
 
-    async def save_browser_data(self) -> StorageState:
+    async def clear_browser_data(self) -> None:
+        """
+        Clear browser data like cookies, local storage, session storage, etc.
+        """
+        await self.context.clear_cookies()
+        await self.context.clear_permissions()
+
+        storage_state: StorageStateModel = await self.export_browser_data(save_to_file=False)
+
+        for origin in storage_state.origins:
+            params = {
+                "origin": origin["origin"],
+                # https://chromedevtools.github.io/devtools-protocol/tot/Storage/#type-StorageType
+                # Allowed Values: appcache, cookies, file_systems, indexeddb, local_storage, shader_cache, websql,
+                # service_workers, cache_storage, interest_groups, shared_storage, storage_buckets, all, other
+                "storageTypes": "all",
+            }
+            # https://chromedevtools.github.io/devtools-protocol/tot/Storage/#method-clearDataForOrigin
+            await self.cdp_session.send("Storage.clearDataForOrigin", params=params)
+
+        for origin in storage_state.trust_tokens:
+            # https://chromedevtools.github.io/devtools-protocol/tot/Storage/#method-clearTrustTokens
+            params = {"issuerOrigin": origin["issuerOrigin"]}
+            await self.cdp_session.send("Storage.clearTrustTokens", params=params)
+
+    async def export_browser_data(self, save_to_file: bool = True) -> StorageStateModel:
         """
         Export browser data to the file like cookies, local storage, etc.
-        :return: StorageState
+        :return: StorageStateModel
         """
 
         sub_dir = self.browser_profile.profile_dir.joinpath(STORAGE_SUBDIR)
         sub_dir.mkdir(parents=False, exist_ok=True)
 
-        # Save storage state into the file.
-        filename = sub_dir.joinpath(BROWSER_STATE_FILENAME)
-        return await self.context.storage_state(path=filename)
+        result: StorageState = await self.context.storage_state()
 
-    async def load_browser_data(self) -> StorageState:
+        # https://chromedevtools.github.io/devtools-protocol/tot/Storage/#method-getTrustTokens
+        trust_tokens = await self.cdp_session.send("Storage.getTrustTokens")
+        storage_state = StorageStateModel(
+            cookies=result["cookies"], origins=result["origins"], trust_tokens=trust_tokens["tokens"]
+        )
+
+        if save_to_file:
+            # Save storage state into the file.
+            filename = sub_dir.joinpath(BROWSER_STATE_FILENAME)
+            filename.open(mode="w", encoding="utf-8").write(json.dumps(jsonable_encoder(storage_state)))
+
+        return storage_state
+
+    async def import_browser_data(self) -> StorageStateModel:
         """
         Load browser data from the file like cookies, local storage, etc.
-        :return: StorageState
+        :return: StorageStateModel
         """
 
         sub_dir = self.browser_profile.profile_dir.joinpath(STORAGE_SUBDIR)
@@ -240,19 +285,14 @@ class BrowserAutomator:
         if not filename.exists():
             raise FileNotFoundError(f"File {filename} not found")
 
-        _ = await self.browser.new_context(storage_state=filename)
+        content = filename.open(mode="r", encoding="utf-8").read()
+        storage_state: StorageStateModel = StorageStateModel(**json.loads(content))
 
-        raise NotImplementedError("Not implemented yet")
+        await self.cdp_session.send("Storage.setCookies", params=jsonable_encoder({"cookies": storage_state.cookies}))
+        # TODO: set local storage
+        # TODO: set trust tokens
 
-    async def get_cookies(self) -> Dict:
-        """
-        Get all cookies from the browser.
-
-        :return: All cookies from the browser.
-        """
-
-        # https://chromedevtools.github.io/devtools-protocol/tot/Storage/#method-getCookies
-        return await self.cdp_client.send_command("Storage.getCookies")
+        return await self.export_browser_data(save_to_file=False)
 
     async def _bas_safe_call(self, page: Page, javascript_func_code: str) -> Any:
         """

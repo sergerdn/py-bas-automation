@@ -4,7 +4,7 @@ import pytest
 from playwright.async_api import BrowserContext
 from pydantic import DirectoryPath
 
-from pybas_automation.browser_automator import BrowserAutomator
+from pybas_automation.browser_automator import BrowserAutomator, StorageStateModel
 from pybas_automation.browser_automator.browser_automator import BrowserWsConnectError
 from pybas_automation.browser_profile import BrowserProfile
 
@@ -51,7 +51,7 @@ class TestBrowserAutomator:
             await automator.page.goto("https://lumtest.com/echo.json")
 
     @pytest.mark.asyncio
-    async def test_save_browser_data(self, browser_data: tuple[BrowserContext, DirectoryPath, int]) -> None:
+    async def test_save_load_browser_data(self, browser_data: tuple[BrowserContext, DirectoryPath, int]) -> None:
         """
         Test the BrowserAutomator's ability to communicate with a browser instance
         and verify the saving of browser data including cookies and local storage values.
@@ -90,19 +90,25 @@ class TestBrowserAutomator:
                 )
 
             # Save browser data (cookies, local storage, etc.) and verify the contents
-            result = await automator.save_browser_data()
-
-            # Validate that the result is a dictionary
-            assert type(result) is dict
+            storage_state: StorageStateModel = await automator.export_browser_data()
 
             # Ensure cookies have been saved and retrieved correctly
-            assert result.get("cookies") is not None
-            assert len(result["cookies"]) > 0
+            assert storage_state.cookies is not None
+            assert len(storage_state.cookies) > 0
 
             # Ensure local storage values have been saved and retrieved correctly
-            assert result.get("origins") is not None
-            assert len(result["origins"]) == 2
+            assert storage_state.origins is not None
+            assert len(storage_state.origins) == 2
 
-            # Future: Can extend this test to validate loading the saved browser data
-            # result_loaded = await automator.load_browser_data()
-            # pass
+            # Clear all browser data and verify that the browser data has been cleared
+            await automator.clear_browser_data()
+            storage_state_clear: StorageStateModel = await automator.export_browser_data(save_to_file=False)
+            assert len(storage_state_clear.cookies) == 0
+            assert len(storage_state_clear.origins) == 0
+
+            # Validate that the browser data have successfully been restored
+            storage_state_imported: StorageStateModel = await automator.import_browser_data()
+            assert len(storage_state_imported.cookies) == 2
+
+            # TODO: because local storage values are not restored yet
+            assert len(storage_state_imported.origins) == 0

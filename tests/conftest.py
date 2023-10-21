@@ -8,6 +8,17 @@ import pytest
 from _pytest.monkeypatch import MonkeyPatch
 
 
+@pytest.fixture(autouse=True)
+def _debug_cdp() -> None:
+    debug_cdp = os.environ.get("DEBUG_TESTS", "false").lower() == "true"
+    if debug_cdp:
+        print("Debug cdp enabled")
+
+        # Playwright debug logging
+        os.environ["DEBUG"] = "pw:protocol"
+        os.environ["DEBUGP"] = "True"
+
+
 @pytest.fixture(scope="function", autouse=True)
 def _mock_app_data_dir() -> Generator[None, None, None]:
     """

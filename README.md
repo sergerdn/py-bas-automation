@@ -369,10 +369,10 @@ async def main():
             await elem.click()
 
             print("Page content from BAS_SAFE api: %s ...", page_content[:100])
-        
+
         # Export browser data to the file like cookies, local storage
-        await automator.save_browser_data()
-        
+        await automator.export_browser_data()
+
         # Variant 1: Work with the Playwright API directly.
         ws_endpoint = automator.get_ws_endpoint()
         async with async_playwright() as pw:
