@@ -1,3 +1,13 @@
+## 0.1.16 (2023-10-21)
+
+### Feat
+
+- improve export/import browser data (#70)
+
+### Fix
+
+- remove export/import browser data
+
 ## 0.1.15 (2023-10-20)
 
 ### Feat

@@ -96,8 +96,10 @@ publish:
     endif
 
 bump_version:
-	echo "Current branch is '${GIT_BRANCH}'."
+	@echo "Current branch is '${GIT_BRANCH}'."
     ifeq ($(GIT_BRANCH),master)
+		poetry run python scripts/update_readme_links.py
+		poetry check
 		cz bump --check-consistency --changelog --increment=patch
     else
 		@echo "Bump version is only allowed from the 'master' branch."
