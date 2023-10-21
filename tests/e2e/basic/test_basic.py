@@ -76,7 +76,7 @@ class TestBasic2e2:
         bas_app.window(title="OK Enter", top_level_only=False).wrapper_object().click()
 
         # Give the app some time to process after the click
-        await asyncio.sleep(5)
+        await asyncio.sleep(15)
 
         # Continuously check if the browser is clickable by evaluating the number of children of the browser's parent
         # window. In DEBUG mode, once the script finishes execution, the count of children should change,
