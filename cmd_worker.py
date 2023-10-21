@@ -84,7 +84,7 @@ async def run(task_id: UUID, remote_debugging_port: int, unique_process_id: str)
         # Variant 1: Work with the BrowserAutomator API
         await automator.page.goto("https://playwright.dev/python/")
 
-        await automator.save_browser_data()
+        await automator.export_browser_data()
 
         if unique_process_id:
             # With Automator, you can call function from the BrowserAutomationStudio API.
@@ -98,7 +98,7 @@ async def run(task_id: UUID, remote_debugging_port: int, unique_process_id: str)
             logger.debug("Page content from BAS_SAFE api: %s ...", page_content[:100])
 
         #  Export browser data to the file like cookies, local storage
-        await automator.save_browser_data()
+        await automator.export_browser_data()
 
         # Variant 1: Work with the Playwright API directly.
         ws_endpoint = automator.get_ws_endpoint()

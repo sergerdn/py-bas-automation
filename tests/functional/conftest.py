@@ -110,17 +110,14 @@ async def browser_data() -> AsyncGenerator[tuple[BrowserContext, DirectoryPath, 
     debug_tests = os.environ.get("DEBUG_TESTS", "false").lower() == "true"
 
     async with async_playwright() as playwright:
-        browser = await playwright.chromium.launch_persistent_context(
+        _ = await playwright.chromium.launch_persistent_context(
             user_data_dir=user_data_dir,
             headless=not debug_tests,
             args=[f"--remote-debugging-port={port}"],
         )
 
-        # cdp_browser = playwright.chromium.connect_over_cdp(f"http://localhost:{port}")
-        # data = browser.storage_state()
-        # cdp_browser = browser.new_cdp_session(browser.new_page())
-
-        yield browser, user_data_dir, port  # type: ignore
+        cdp_browser = await playwright.chromium.connect_over_cdp(f"http://localhost:{port}")
+        yield cdp_browser, user_data_dir, port  # type: ignore
 
     shutil.rmtree(user_data_dir, ignore_errors=True)
 

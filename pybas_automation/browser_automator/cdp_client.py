@@ -38,7 +38,11 @@ class CDPClient:
 
         async with websockets.connect(url) as ws:  # type: ignore
             self.message_id += 1
-            message = {"id": self.message_id, "method": method, "params": params or {}}
+            message = {
+                "id": self.message_id,
+                "method": method,
+                "params": params or {},
+            }
 
             logger.debug("Sending message: %s", message)
 
