@@ -12,18 +12,14 @@ from typing import Any, Dict, List, Tuple, Union
 
 import filelock
 import httpx
-from fastapi.encoders import jsonable_encoder
 from playwright.async_api import Browser, BrowserContext, CDPSession, Locator, Page
 from playwright.async_api import Playwright as AsyncPlaywright
-from playwright.async_api import StorageState, async_playwright
+from playwright.async_api import async_playwright
 
-from pybas_automation import STORAGE_SUBDIR
 from pybas_automation.browser_automator.cdp_client import CDPClient
-from pybas_automation.browser_automator.models import StorageStateModel, WebsocketUrl, WsUrlModel
+from pybas_automation.browser_automator.models import WebsocketUrl, WsUrlModel
 from pybas_automation.browser_profile import BrowserProfile
 from pybas_automation.utils import get_logger
-
-from .settings import BROWSER_STATE_FILENAME
 
 logger = get_logger()
 
@@ -221,78 +217,6 @@ class BrowserAutomator:
         logger.debug("Successfully connected to browser: %s", self.browser)
 
         return self
-
-    async def clear_browser_data(self) -> None:
-        """
-        Clear browser data like cookies, local storage, session storage, etc.
-        """
-        await self.context.clear_cookies()
-        await self.context.clear_permissions()
-
-        storage_state: StorageStateModel = await self.export_browser_data(save_to_file=False)
-
-        for origin in storage_state.origins:
-            params = {
-                "origin": origin["origin"],
-                # https://chromedevtools.github.io/devtools-protocol/tot/Storage/#type-StorageType
-                # Allowed Values: appcache, cookies, file_systems, indexeddb, local_storage, shader_cache, websql,
-                # service_workers, cache_storage, interest_groups, shared_storage, storage_buckets, all, other
-                "storageTypes": "all",
-            }
-            # https://chromedevtools.github.io/devtools-protocol/tot/Storage/#method-clearDataForOrigin
-            await self.cdp_session.send("Storage.clearDataForOrigin", params=params)
-
-        for origin in storage_state.trust_tokens:
-            # https://chromedevtools.github.io/devtools-protocol/tot/Storage/#method-clearTrustTokens
-            params = {"issuerOrigin": origin["issuerOrigin"]}
-            await self.cdp_session.send("Storage.clearTrustTokens", params=params)
-
-    async def export_browser_data(self, save_to_file: bool = True) -> StorageStateModel:
-        """
-        Export browser data to the file like cookies, local storage, etc.
-        :return: StorageStateModel
-        """
-
-        sub_dir = self.browser_profile.profile_dir.joinpath(STORAGE_SUBDIR)
-        sub_dir.mkdir(parents=False, exist_ok=True)
-
-        result: StorageState = await self.context.storage_state()
-
-        # https://chromedevtools.github.io/devtools-protocol/tot/Storage/#method-getTrustTokens
-        trust_tokens = await self.cdp_session.send("Storage.getTrustTokens")
-        storage_state = StorageStateModel(
-            cookies=result["cookies"], origins=result["origins"], trust_tokens=trust_tokens["tokens"]
-        )
-
-        if save_to_file:
-            # Save storage state into the file.
-            filename = sub_dir.joinpath(BROWSER_STATE_FILENAME)
-            filename.open(mode="w", encoding="utf-8").write(json.dumps(jsonable_encoder(storage_state)))
-
-        return storage_state
-
-    async def import_browser_data(self) -> StorageStateModel:
-        """
-        Load browser data from the file like cookies, local storage, etc.
-        :return: StorageStateModel
-        """
-
-        sub_dir = self.browser_profile.profile_dir.joinpath(STORAGE_SUBDIR)
-        sub_dir.mkdir(parents=False, exist_ok=True)
-
-        # Load storage state from the file.
-        filename = sub_dir.joinpath(BROWSER_STATE_FILENAME)
-        if not filename.exists():
-            raise FileNotFoundError(f"File {filename} not found")
-
-        content = filename.open(mode="r", encoding="utf-8").read()
-        storage_state: StorageStateModel = StorageStateModel(**json.loads(content))
-
-        await self.cdp_session.send("Storage.setCookies", params=jsonable_encoder({"cookies": storage_state.cookies}))
-        # TODO: set local storage
-        # TODO: set trust tokens
-
-        return await self.export_browser_data(save_to_file=False)
 
     async def _bas_safe_call(self, page: Page, javascript_func_code: str) -> Any:
         """
