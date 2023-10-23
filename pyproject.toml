@@ -44,7 +44,7 @@ flake8 = "^6.1.0"
 pytest-cov = "^4.1.0"
 pytest-asyncio = "^0.21.1"
 pydocstyle = "^6.3.0"
-pylint = { extras = ["spelling"], version = "^3.0.1" }
+pylint = { extras = ["spelling"], version = "^3.0.2" }
 pylint-pydantic = "^0.3.0"
 autopep8 = "^2.0.4"
 pydeps = "^1.12.17"
