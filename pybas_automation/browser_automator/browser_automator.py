@@ -214,11 +214,15 @@ class BrowserAutomator:
         self.cdp_session: CDPSession = await self.context.new_cdp_session(self.page)
         await self._prepare_cdp()
 
+        if self.unique_process_id:
+            _bas_hide_debug_result = await self._bas_hide_debug(page=self.page)
+            logger.debug("BAS_HIDE_DEBUG result: %s", _bas_hide_debug_result)
+
         logger.debug("Successfully connected to browser: %s", self.browser)
 
         return self
 
-    async def _bas_safe_call(self, page: Page, javascript_func_code: str) -> Any:
+    async def _bas_hide_call(self, page: Page, javascript_func_code: str) -> Any:
         """
         Call a JavaScript function in the BAS _SAFE internal API.
 
@@ -235,6 +239,13 @@ class BrowserAutomator:
 
         return await page.evaluate(javascript_func_code)
 
+    async def _bas_hide_debug(self, page: Union[Page, None] = None) -> Any:
+        javascript_func_code = f"Object.keys({self._javascript_code})"
+        if page is None:
+            page = self.page
+
+        return await self._bas_hide_call(page=page, javascript_func_code=javascript_func_code)
+
     async def bas_get_page_content(self, page: Union[Page, None] = None) -> Any:
         """
         Get the current page content.
@@ -250,7 +261,7 @@ class BrowserAutomator:
             page = self.page
 
         javascript_func_code = f"{self._javascript_code}['BrowserAutomationStudio_GetPageContent']()"
-        return await self._bas_safe_call(page=page, javascript_func_code=javascript_func_code)
+        return await self._bas_hide_call(page=page, javascript_func_code=javascript_func_code)
 
     async def bas_scroll_mouse_to_coordinates(self, x: int, y: int, page: Union[Page, None] = None) -> Any:
         """
@@ -267,7 +278,7 @@ class BrowserAutomator:
             page = self.page
 
         javascript_func_code = f"{self._javascript_code}['BrowserAutomationStudio_ScrollToCoordinates']({x},{y},true)"
-        return await self._bas_safe_call(page=page, javascript_func_code=javascript_func_code)
+        return await self._bas_hide_call(page=page, javascript_func_code=javascript_func_code)
 
     async def bas_move_mouse_to_elem(self, elem: Locator, page: Union[Page, None] = None) -> Any:
         """
