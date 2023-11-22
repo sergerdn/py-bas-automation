@@ -58,7 +58,7 @@ pywinauto = "^0.6.8"
 
 [tool.poetry.group.cmd.dependencies]
 click = "^8.1.7"
-playwright = {extras = ["chromium"], version = "^1.39.0"}
+playwright = {extras = ["chromium"], version = "^1.40.0"}
 
 [tool.poetry.group.cmd-dev.dependencies]
 pytest-playwright = "^0.4.2"
