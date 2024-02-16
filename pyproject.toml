@@ -47,7 +47,7 @@ pydocstyle = "^6.3.0"
 pylint = { extras = ["spelling"], version = "^3.0.2" }
 pylint-pydantic = "^0.3.0"
 autopep8 = "^2.0.4"
-pydeps = "^1.12.17"
+pydeps = "^1.12.18"
 commitizen = "^3.12.0"
 nest-asyncio = "^1.5.8"
 
